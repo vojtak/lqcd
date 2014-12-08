@@ -1,0 +1,15 @@
+#general system backups
+*~
+
+# ipython backups
+*.ipynb_checkpoints*
+
+#logs and errors
+*log*
+*error*
+
+#binaries, configurations, and results
+
+build/*
+configurations*
+results*
