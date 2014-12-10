@@ -71,11 +71,10 @@ class class_hadron {
 
   int XYZnodeCoor = XnodeCoor + Xnodes * (YnodeCoor + Ynodes * ZnodeCoor);
    
-  #define Spinor(nd, alpha, x)  (alpha + nd*(x))
   #define Dirac(     alpha, x)  (alpha +  4*(x))
-  #define Pauli(     alpha, x)  (alpha +  2*(x))
   #define Color(     c,     x)  (c     +  3*(x))
 
+  // format of indexing is (sink color, sink dirac, source color, source dirac, sink xyz, sink t) 
   size_t prop_slv_idx(int c, int d, int cP, int dP, int ixyz, int it)
   {
     return Color(c, Dirac(d, 
