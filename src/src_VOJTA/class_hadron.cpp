@@ -25,18 +25,39 @@
 using namespace HAL_idx;
 
 
-void class_hadron::run_GF(char hadron_name[]){
+void class_hadron::run_GF(string hadron_name){
 
-if(strcmp(hadron_name,"pion")==0){
-  run_GF_meson(prop_ud,prop_ud);
-}
-else{
-printf("ERROR");
-}
+  double correlator[2*Tsites];
+  memset(correlator,0,sizeof(correlator));
 
+
+  if(hadron_name=="pion"){
+  
+    run_GF_meson(correlator, prop_ud, prop_ud);
+
+  }
+  else if(hadron_name=="kaon"){
+  
+    run_GF_meson(correlator, prop_ud, prop_s);
+
+  }
+  else if(hadron_name=="eta"){
+  
+    run_GF_meson(correlator, prop_s, prop_s);
+
+  }
+  else{
+  
+    printf("ERROR");
+
+  }
+  
+  corr_print(correlator, hadron_name);
+  
 };
 
-void class_hadron::run_GF_meson(double* prop_up, double* prop_down){
+
+void class_hadron::run_GF_meson(double* correlator, double* prop_up, double* prop_down){
 
   // complexify propagators
   COMPLEX* Prop_up   = (COMPLEX*)prop_up   ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
@@ -62,12 +83,10 @@ void class_hadron::run_GF_meson(double* prop_up, double* prop_down){
   
     #pragma omp parallel for
     for(int it = 0; it < TnodeSites; it++){
- 
 
       // ixyz summation
       COMPLEX sum_ixyz = COMPLEX_ZERO;
       for(int ixyz = 0; ixyz < XYZnodeSites; ixyz++){
-
 
         // source contraction
         COMPLEX sum_src = COMPLEX_ZERO;
@@ -100,30 +119,63 @@ void class_hadron::run_GF_meson(double* prop_up, double* prop_down){
         
       } // ixyz
 
-    printf("MPI %i OMP %i ... it %i sum %1.16e %1.16e I\n", 
-           MPI_rank,omp_get_thread_num(), it,Real(sum_ixyz),Imag(sum_ixyz));
+//    printf("MPI %i OMP %i ... it %i sum %1.16e %1.16e I\n", 
+//           MPI_rank,omp_get_thread_num(), it,Real(sum_ixyz),Imag(sum_ixyz));
  
     ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_ixyz;
     
   } // it, end of omp parallel
 
-  Communicator::sync();
+  // reduce from all MPI processes
+  MPI_Barrier(MPI_COMM_WORLD);
   MPI_Reduce(correlator_local, correlator_global, 2*Tsites, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
-  Communicator::sync();
-  if(Communicator::self()==0){
-    for(int it=0;it<Tsites;it++){
-      printf("local    ... MPI %i it %3i sum %1.16e %1.16e I\n", 0, it,correlator_local[2*it],correlator_local[2*it+1]);
-    }
-    printf("---------------\n");
-    for(int it=0;it<Tsites;it++){
-      printf("global   ... MPI %i it %3i sum %1.16e %1.16e I\n", 0, it,correlator_global[2*it],correlator_global[2*it+1]);
-    }
-    printf("+++++++++++++++++++++++++++++++++++++++++++++++++\n");
+  
+  // output correlator
+  for(int it = 0; it < Tsites; it++){
+    ((COMPLEX*)correlator)[it]=((COMPLEX*)correlator_global)[it];
   }
-
+  
 }
 
 
 
+void class_hadron::corr_print(double *correlator, string hadron_name)
+{
+
+  int MPI_flag, MPI_size, MPI_rank;
+  MPI_Initialized(&MPI_flag);
+  MPI_Comm_size(MPI_COMM_WORLD,&MPI_size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&MPI_rank);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  
+  if(MPI_rank==0){
+  
+  char wfile[256];
+  snprintf(wfile,sizeof(wfile), "results/%s/%s.%02d",
+             base.c_str(),
+             hadron_name.c_str(),
+             iT_src);
+  printf(wfile);
+
+  string ofname(wfile);
+  std::ofstream fout(ofname.c_str());
+  fout.setf(std::ios::scientific);
+  fout.precision(16);
+
+  for(int it = 0; it < Tsites; it++){
+    int iT2 = (it + iT_src + 100*Tsites) % Tsites;
+    char line[1000];
+    snprintf(line, sizeof(line), "%4d\t%1.16e %1.16e\n",
+             it, Real(correlator[2* iT2]),Imag(correlator[2* iT2+1]));
+    fout << line;
+  }
+
+  fout.close();
+
+  }
+
+  MPI_Barrier(MPI_COMM_WORLD);
+
+}
 

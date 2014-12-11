@@ -19,24 +19,33 @@ class class_hadron {
   double *prop_ud; 	// ud propagator
   double *prop_s;  	//  s propagator
   
-  char base[256]; 	// name of the gauge configuration
+  string base; 	        // name of the gauge configuration
   
-  int iT;		// source position in time
+  int iT_src;		// source position in time
 
 
   // =======================================
   // functions
   //
 
-  void run_GF(char hadron_name[]);
+  void run_GF(string hadron_name);
 
-  void run_GF_meson(double* prop_up, double* prop_down);
+  void run_GF_meson(double* correlator, double* prop_up, double* prop_down);
 
-
+  void corr_print(double *correlator, string hadron_name);
 
   // =======================================
   // common parameters and assistant functions (move to some parent class eventually)
   //
+  
+  void set_base_name(string base_in){
+    base = base_in;
+  };
+  void set_source_position(int iT_src_in){
+    iT_src = iT_src_in;
+  };
+  
+  private:
   
   int Nc   = CommonParameters::Nc();
   int Nd   = CommonParameters::Nd();

@@ -578,7 +578,7 @@ int core(int argc,char** argv)
         vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
       }
       // solver s
-/*      {
+      {
         vout.general("\n\t@@@ solver s(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
 
         fopr_c_s    -> set_parameters(*params_clover_s);
@@ -606,7 +606,7 @@ int core(int argc,char** argv)
         }
         vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
       }
-*/      //---------------------------------------------------------------------
+      //---------------------------------------------------------------------
       // solvers end
       //---------------------------------------------------------------------
 
@@ -617,12 +617,22 @@ int core(int argc,char** argv)
       converter(sq_ud, prop_ud);
       converter(sq_s, prop_s);
 
-      class_hadron Hadron(prop_ud,prop_ud);
-      // Hadron.set_base_name(base);
-      // Hadron.set_source_position(it_src_pos);
+      class_hadron Hadronn(prop_ud,prop_s);
+      Hadronn.set_base_name(base);
+      vout.general("base is %s\n", base.c_str());
+
+      Hadronn.set_source_position(iT_src_pos);
       //
-      char baryon[]="pion";
-      Hadron.run_GF(baryon);
+
+
+      Hadronn.run_GF("pion");
+
+      Hadronn.run_GF("kaon");
+
+      Hadronn.run_GF("eta");
+
+
+
       // Hadron.run_GF("Pi");
       //
       
