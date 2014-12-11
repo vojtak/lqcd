@@ -97,6 +97,8 @@ using Bridge::vout;
 
 /* -------------- VOJTA code */
 #include "X_misc_V.h"
+
+#include "class_global_wrapper.h"
 #include "class_hadron.h"
 
 
@@ -614,26 +616,19 @@ int core(int argc,char** argv)
       // measurement begin
       //---------------------------------------------------------------------
 
+
       converter(sq_ud, prop_ud);
       converter(sq_s, prop_s);
 
-      class_hadron Hadronn(prop_ud,prop_s);
-      Hadronn.set_base_name(base);
-      vout.general("base is %s\n", base.c_str());
+      //initialize hadron class
+      class_hadron Hadron(prop_ud,prop_s);
 
-      Hadronn.set_source_position(iT_src_pos);
-      //
+      Hadron.set_base_name(base);
+      Hadron.set_source_position(iT_src_pos);
 
+      // run all green functions
+      Hadron.run_all_GF();
 
-      Hadronn.run_GF("pion");
-
-      Hadronn.run_GF("kaon");
-
-      Hadronn.run_GF("eta");
-
-
-
-      // Hadron.run_GF("Pi");
       //
       
       // class_NBS_WF NBS_WF(prop_ud, prop_s);

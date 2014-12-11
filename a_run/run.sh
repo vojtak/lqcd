@@ -5,7 +5,7 @@
 rm -rf results/
 mkdir results
 
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=2
 
 #export PROFILEDIR=profile
 #mkdir profile
