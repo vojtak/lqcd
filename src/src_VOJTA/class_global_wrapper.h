@@ -28,10 +28,14 @@ class class_global_wrapper{
   int MPI_flag, MPI_size, MPI_rank;       
 
 
-  // name of the gauge configuration
+  // name of the gauge configuration and prefix for measurements
   string base; 	        
   void set_base_name(string base_in){
     base = base_in;
+  };
+  string prefix=""; 	        
+  void set_prefix_name(string prefix_in){
+    prefix = prefix_in;
   };
   
 
@@ -82,6 +86,7 @@ class class_global_wrapper{
   // =======================================
   // other useful functions
   //
+
  
   void create_directory(string path);
   string LocalTime();

@@ -497,7 +497,7 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
     //for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt()/100+1;iT_src_pos++){
+    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt()/100+2;iT_src_pos++){
       
       // -- Vojta
       // set the source position    
@@ -624,6 +624,9 @@ int core(int argc,char** argv)
       class_hadron Hadron(prop_ud,prop_s);
 
       Hadron.set_base_name(base);
+      //char pr[50];
+      //snprintf(pr,sizeof(pr),"c%03d",iT_src_pos);
+      //Hadron.set_prefix_name(pr);
       Hadron.set_source_position(iT_src_pos);
 
       // run all green functions

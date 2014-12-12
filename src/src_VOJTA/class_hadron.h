@@ -22,13 +22,19 @@ class class_hadron : public class_global_wrapper {
 
   void run_GF(string hadron_name);
 
-  void run_GF_meson(double* correlator, double* prop_up, double* prop_down);
+  void run_GF_meson(double* correlator, double* prop_quark, double* prop_antiquark);
+
+  void run_GF_baryon_octet(double* correlator, double* prop_quark1, double* prop_quark2);
   
+  void run_GF_baryon_octet_lambda(double* correlator, 
+                   double* prop_up, double* prop_down, double* prop_strange);
+
   private:
 
   // =======================================
   // data members
-
+  //
+  
   double *prop_ud; 	// ud propagator
   double *prop_s;  	//  s propagator
 
