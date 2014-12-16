@@ -9,7 +9,8 @@ class class_hadron : public class_global_wrapper {
   // =======================================
   // constructor
   //
-    class_hadron(double *prop_ud_in, double *prop_s_in){
+  
+  class_hadron(double *prop_ud_in, double *prop_s_in){
     prop_ud=prop_ud_in;
     prop_s=prop_s_in;
   };
@@ -18,6 +19,7 @@ class class_hadron : public class_global_wrapper {
   // =======================================
   // functions
   //
+  
   void run_all_GF();
 
   void run_GF(string hadron_name);
@@ -44,8 +46,6 @@ class class_hadron : public class_global_wrapper {
   //
 
   void corr_print(double *correlator, string hadron_name);  
-
-
 
 
   // =======================================

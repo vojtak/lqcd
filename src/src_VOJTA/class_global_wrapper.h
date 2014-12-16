@@ -24,6 +24,9 @@ class class_global_wrapper{
   // data members
   //
 
+  // pi
+  #define PI  3.1415926535897932385
+
   // MPI parameters
   int MPI_flag, MPI_size, MPI_rank;       
 

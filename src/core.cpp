@@ -99,6 +99,7 @@ using Bridge::vout;
 #include "X_misc_V.h"
 
 #include "class_global_wrapper.h"
+#include "class_noise_source.h"
 #include "class_hadron.h"
 
 
@@ -570,7 +571,7 @@ int core(int argc,char** argv)
             int idx = icolor + Nc * ispin;
             source_ud->set(b, idx);
 	  
-            fprop_ud -> invert_D(sq_ud[idx], b, Nconv, diff); 
+ //           fprop_ud -> invert_D(sq_ud[idx], b, Nconv, diff); 
 
             vout.general(vl, "   %2d   %2d   %6d   %12.4e\n",
                          icolor, ispin, Nconv, diff);
@@ -602,7 +603,7 @@ int core(int argc,char** argv)
             int idx = icolor + Nc * ispin;
             source_s->set(b, idx);
 	  
-            fprop_s -> invert_D(sq_s[idx], b, Nconv, diff);
+  //          fprop_s -> invert_D(sq_s[idx], b, Nconv, diff);
           }
           vout.general(vl, "\n");
         }
@@ -619,6 +620,15 @@ int core(int argc,char** argv)
 
       converter(sq_ud, prop_ud);
       converter(sq_s, prop_s);
+
+
+      //initialize noise source class
+      class_noise_source_propagator no_s_p(2);
+      
+      no_s_p.run();
+      no_s_p.print();
+
+
 
       //initialize hadron class
       class_hadron Hadron(prop_ud,prop_s);

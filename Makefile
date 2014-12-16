@@ -26,10 +26,12 @@ objects =  $(wildcard $(addsuffix /*.o, $(osrc_dirs)))
 SRC_DIR   = src
 SRC_DIR_VOJTA = $(SRC_DIR)/src_VOJTA
 SRC_DIR_HAL = $(SRC_DIR)/src_HAL
+SRC_DIR_EXTERNAL = $(SRC_DIR)/src_EXTERNAL
 
 INCL_DIR = -I$(SRC_DIR)
 INCL_DIR += -I$(SRC_DIR_VOJTA)
 INCL_DIR += -I$(SRC_DIR_HAL)
+INCL_DIR += -I$(SRC_DIR_EXTERNAL)
 
 BUILD_DIR = build
 
@@ -56,6 +58,7 @@ SRCS =
 SRCS += $(wildcard $(addsuffix /*.cpp, $(SRC_DIR)))
 SRCS += $(wildcard $(addsuffix /*.cpp, $(SRC_DIR_VOJTA)))
 SRCS += $(wildcard $(addsuffix /*.cpp, $(SRC_DIR_HAL)))
+SRCS += $(wildcard $(addsuffix /*.cpp, $(SRC_DIR_EXTERNAL)))
 
 BIN_OBJS =
 BIN_OBJS += $(subst $(SRC_DIR)/,$(BUILD_DIR)/, $(subst .cpp,.o, $(SRCS)))
@@ -71,6 +74,7 @@ build_dir:
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(subst $(SRC_DIR)/,$(BUILD_DIR)/, $(SRC_DIR_VOJTA))
 	mkdir -p $(subst $(SRC_DIR)/,$(BUILD_DIR)/, $(SRC_DIR_HAL))
+	mkdir -p $(subst $(SRC_DIR)/,$(BUILD_DIR)/, $(SRC_DIR_EXTERNAL))
 
 
 # compilation of HAL code
