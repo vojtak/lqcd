@@ -5,14 +5,14 @@
 #include "randomc.h"
 
 
-class class_noise_source_propagator : public class_global_wrapper {
+class class_noise_source : public class_global_wrapper {
 
   public:
   
   // =======================================
   // constructor
   //
-  class_noise_source_propagator(int N_noises_in){
+  class_noise_source(int N_noises_in){
   
     N_noises=N_noises_in;
 
@@ -21,6 +21,7 @@ class class_noise_source_propagator : public class_global_wrapper {
     RanGen.RandomInitByArray(seed,2);
 
     // allocate memory for the noise_vectors
+    printf("++++++++++++ XYZ = %i , NN= %i,  ... size %i\n\n",XYZnodeSites , N_noises, 2* N_noises * XYZnodeSites);
     noise_vector = new double[2* N_noises * XYZnodeSites];
     memset(noise_vector,0,sizeof(noise_vector));
 
@@ -33,6 +34,7 @@ class class_noise_source_propagator : public class_global_wrapper {
   
   void run();
   void print();
+  void print_full();
   
   double *get_noise_ixyz(int noise_num);
 

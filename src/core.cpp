@@ -98,6 +98,11 @@ using Bridge::vout;
 /* -------------- VOJTA code */
 #include "X_misc_V.h"
 
+/* local from HAL */
+#include "COMPLEX.h"
+#include "HAL_indexes.h"
+
+/* local from VOJTA */
 #include "class_global_wrapper.h"
 #include "class_noise_source.h"
 #include "class_hadron.h"
@@ -418,7 +423,8 @@ int core(int argc,char** argv)
   // main loop w.r. to gauge configurations
   //---------------------------------------------------------------------
 
-  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
+  for(int iarg = 0; iarg <1; iarg++){
+//  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
 
     string ifname(gfile_list[iarg]);
     
@@ -621,12 +627,12 @@ int core(int argc,char** argv)
       converter(sq_ud, prop_ud);
       converter(sq_s, prop_s);
 
+      int N_sources=4;
 
-      //initialize noise source class
-      class_noise_source_propagator no_s_p(2);
-      
-      no_s_p.run();
-      no_s_p.print();
+      //initialize noise source class and generate noise volumes :)
+      class_noise_source noise_sources(N_sources);
+      noise_sources.run();
+      //noise_sources.print();
 
 
 

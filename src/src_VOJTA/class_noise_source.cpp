@@ -24,7 +24,7 @@
 
 
 
-void class_noise_source_propagator :: run(){
+void class_noise_source :: run(){
 
    for(int n=0; n<N_noises;n++){
    
@@ -34,31 +34,49 @@ void class_noise_source_propagator :: run(){
 
 }
 
-void class_noise_source_propagator :: print(){
+void class_noise_source :: print(){
 
   if(MPI_rank==0){
   for(int n=0; n<N_noises;n++){
    
-    for(int i=0; i<XYZnodeSites;i++){
+    for(int i=0; i<XYZnodeSites+10;i++){
       
-      printf("MPI %2i ... n= %2i ... i %2i   ran_num %1.16e %1.16e I, %1.16e %1.16e I\n", 
-               MPI_rank, n , i , noise_vector[2*(n*XnodeSites+i)],noise_vector[2*(n*XnodeSites+i)+1], 
-               Real(((COMPLEX*)noise_vector)[n*XnodeSites+i]),Imag(((COMPLEX*)noise_vector)[n*XnodeSites+i]));
+      printf("MPI %2i ... n= %2i ... i %2i   ran_num %1.16e %1.16e I, %1.16e %1.16e I, \tnorm %1.16e\n", 
+               MPI_rank, n , i , noise_vector[2*(n*XYZnodeSites+i)],noise_vector[2*(n*XYZnodeSites+i)+1], 
+               Real(((COMPLEX*)noise_vector)[n*XYZnodeSites+i]),Imag(((COMPLEX*)noise_vector)[n*XYZnodeSites+i]),
+               ((COMPLEX*)noise_vector)[n*XYZnodeSites+i]*Conj(((COMPLEX*)noise_vector)[n*XYZnodeSites+i])
+               );
     }
 
     printf("MPI %2i ................................... n= %2i\n\n",
                MPI_rank, n );
   }
 
-  for(int i=0;i< N_noises * XnodeSites;i++){
-  printf("%1.16e %1.16e I\n",noise_vector[2*i], noise_vector[2*i+1]);
+//  for(int i=0;i< N_noises * XnodeSites;i++){
+//  printf("%1.16e %1.16e I\n",noise_vector[2*i], noise_vector[2*i+1]);
+//  }
   }
+}
+
+void class_noise_source :: print_full(){
+
+  if(MPI_rank==0){
+  for(int i=0; i<N_noises*XYZnodeSites+10;i++){
+      
+      printf("MPI %2i ... n= %2i ... i %2i   ran_num %1.16e %1.16e I, %1.16e %1.16e I, norm %1.16e\n", 
+               MPI_rank, -1 , i , noise_vector[2*i],noise_vector[2*i+1], 
+               Real(((COMPLEX*)noise_vector)[i]),Imag(((COMPLEX*)noise_vector)[i]),
+               ((COMPLEX*)noise_vector)[i]*Conj(((COMPLEX*)noise_vector)[i])
+               );
+   }
+//  for(int i=0;i< N_noises * XnodeSites;i++){
+//  printf("%1.16e %1.16e I\n",noise_vector[2*i], noise_vector[2*i+1]);
+//  }
   }
 }
 
 
-
-double * class_noise_source_propagator :: get_noise_ixyz(int noise_num){
+double * class_noise_source :: get_noise_ixyz(int noise_num){
 
   return noise_vector+2*noise_num*XYZnodeSites;
 
@@ -66,7 +84,7 @@ double * class_noise_source_propagator :: get_noise_ixyz(int noise_num){
 
 
 
-void class_noise_source_propagator :: generate_noise_ixyz(double* noise){
+void class_noise_source :: generate_noise_ixyz(double* noise){
    
   for(int i=0;i<XYZnodeSites;i++){
 
