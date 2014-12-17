@@ -414,6 +414,9 @@ int core(int argc,char** argv)
   double *prop_ud = new double[XYZTnodeSites * 3*4*3*4 *2];
   double *prop_s  = new double[XYZTnodeSites * 3*4*3*4 *2];
 
+  double *prop_ud_noise = new double[XYZTnodeSites * 3*4*3*4 *2];
+  double *prop_s_noise  = new double[XYZTnodeSites * 3*4*3*4 *2];
+
   //=====================================================================
   // end of initialization part
   //=====================================================================
@@ -551,6 +554,8 @@ int core(int argc,char** argv)
       //---------------------------------------------------------------------
  
       typedef std::valarray<Field_F> PropagatorSet;
+
+
       PropagatorSet sq_ud(Nc * Nd);
       PropagatorSet sq_s(Nc * Nd);
 
@@ -577,7 +582,7 @@ int core(int argc,char** argv)
             int idx = icolor + Nc * ispin;
             source_ud->set(b, idx);
 	  
- //           fprop_ud -> invert_D(sq_ud[idx], b, Nconv, diff); 
+            fprop_ud -> invert_D(sq_ud[idx], b, Nconv, diff); 
 
             vout.general(vl, "   %2d   %2d   %6d   %12.4e\n",
                          icolor, ispin, Nconv, diff);
@@ -609,7 +614,7 @@ int core(int argc,char** argv)
             int idx = icolor + Nc * ispin;
             source_s->set(b, idx);
 	  
-  //          fprop_s -> invert_D(sq_s[idx], b, Nconv, diff);
+            fprop_s -> invert_D(sq_s[idx], b, Nconv, diff);
           }
           vout.general(vl, "\n");
         }
@@ -627,7 +632,7 @@ int core(int argc,char** argv)
       converter(sq_ud, prop_ud);
       converter(sq_s, prop_s);
 
-      int N_sources=4;
+      int N_sources=1;
 
       //initialize noise source class and generate noise volumes :)
       class_noise_source noise_sources(N_sources);
@@ -635,18 +640,129 @@ int core(int argc,char** argv)
       //noise_sources.print();
 
 
+/////////////////////////////////////////////////////////////////////////////////
+
+      PropagatorSet sq_ud_noise(Nc * Nd);
+      PropagatorSet sq_s_noise(Nc * Nd);
+      
+      T_noise=0;
+
+      // ud solver
+      {
+        vout.general("\n\t@@@ solver ud(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
+
+        fopr_c_ud    -> set_parameters(*params_clover_ud);
+        fopr_c_ud    -> set_config    (U_fixed, U_fixed);
+        solver_ud    -> set_parameters(*params_solver_ud);
+   //     source_ud    -> set_parameters(*params_source_ud);
+
+        for(int indx = 0; indx < Nc*Nd; indx++) sq_ud[indx] = 0.0;
+      
+        Field_F b;
+        b = 0.0;
+
+        int    Nconv;
+        double diff;
+      
+        vout.general(vl, "  color spin   Nconv      diff \n");
+        for (  int ispin  = 0; ispin  < Nd; ++ispin){
+          for (int icolor = 0; icolor < Nc; ++icolor) {
+            int idx = icolor + Nc * ispin;
+ //           source_ud->set(b, idx);
+
+    if (T_noise == Communicator::ipe(t_dir)) {
+     int t = T_noise % Nsize[3];
+
+    for (int ixyz = 0; ixyz < XYZnodeSites; ++z) {
+          //int lsite = x + Nsize[0] * (y + Nsize[1] * z);
+
+          //int isite = m_index.site(x, y, z, t);
+          int isite = ixyz+T_noise*XYZnodeSites;
+
+          //XXX field layout: complex as two doubles
+          b.set(2 * idx + 0, isite, 0, 1.0/XYZSites);
+          b.set(2 * idx + 1, isite, 0, 0.0);
+    }
+  }
+
+	  
+            fprop_ud -> invert_D(sq_ud_noise[idx], b, Nconv, diff); 
+
+            vout.general(vl, "   %2d   %2d   %6d   %12.4e\n",
+                         icolor, ispin, Nconv, diff);
+          }
+          vout.general(vl, "\n");
+        }
+        vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
+      }
+      // solver s
+      {
+        vout.general("\n\t@@@ solver s(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
+
+        fopr_c_s    -> set_parameters(*params_clover_s);
+        fopr_c_s    -> set_config    (U_fixed, U_fixed);
+        solver_s    -> set_parameters(*params_solver_s);
+        source_s    -> set_parameters(*params_source_s);
+ 
+        for(int indx = 0; indx < Nc*Nd; indx++) sq_s[indx] = 0.0;
+      
+        Field_F b;
+        b = 0.0;
+      
+        int    Nconv;
+        double diff;
+      
+        vout.general(vl, "  color spin   Nconv      diff\n");
+        for (  int ispin  = 0; ispin  < Nd; ++ispin) {
+          for (int icolor = 0; icolor < Nc; ++icolor) {
+            int idx = icolor + Nc * ispin;
+ //           source_ud->set(b, idx);
+
+    if (T_noise == Communicator::ipe(t_dir)) {
+     int t = T_noise % Nsize[3];
+
+    for (int ixyz = 0; ixyz < XYZnodeSites; ++z) {
+          //int lsite = x + Nsize[0] * (y + Nsize[1] * z);
+
+          //int isite = m_index.site(x, y, z, t);
+          int isite = ixyz+T_noise*XYZnodeSites;
+
+          //XXX field layout: complex as two doubles
+          b.set(2 * idx + 0, isite, 0, 1.0/XYZSites);
+          b.set(2 * idx + 1, isite, 0, 0.0);
+    }
+  }
+            fprop_s -> invert_D(sq_s_noise[idx], b, Nconv, diff);
+          }
+          vout.general(vl, "\n");
+        }
+        vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
+      }
+      //---------------------------------------------------------------------
+      // solvers end
+      //---------------------------------------------------------------------
+
+      converter(sq_ud_noise, prop_ud_noise);
+      converter(sq_s_noise,  prop_s_noise);
+
+////////////////////////////////////////////////////////////////
+
 
       //initialize hadron class
       class_hadron Hadron(prop_ud,prop_s);
+      class_hadron Hadron_noise(prop_ud_noise,prop_s_noise);
 
       Hadron.set_base_name(base);
-      //char pr[50];
-      //snprintf(pr,sizeof(pr),"c%03d",iT_src_pos);
-      //Hadron.set_prefix_name(pr);
+      Hadron_noise.set_base_name(base);
+        char pr[50];
+        snprintf(pr,sizeof(pr),"n_",);
+        Hadron_noise.set_prefix_name(pr);
+      
       Hadron.set_source_position(iT_src_pos);
+      Hadron_noise.set_source_position(iT_src_pos);
 
       // run all green functions
-      Hadron.run_all_GF();
+      Hadron_noise.run_all_GF();
 
       //
       
