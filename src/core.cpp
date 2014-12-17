@@ -507,7 +507,7 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
     //for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt()/100+2;iT_src_pos++){
+    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt()/100+3;iT_src_pos++){
       
       // -- Vojta
       // set the source position    
@@ -638,18 +638,21 @@ int core(int argc,char** argv)
       class_noise_source noise_sources(N_sources);
       noise_sources.run();
       //noise_sources.print();
+/*
+      class_propagator noise_propagator();
+      noise_propagator.solve(prop_ud, prop_s, source)
 
-
+*/
 /////////////////////////////////////////////////////////////////////////////////
 
       PropagatorSet sq_ud_noise(Nc * Nd);
       PropagatorSet sq_s_noise(Nc * Nd);
       
-      T_noise=0;
+      int T_noise=iT_src_pos;
 
       // ud solver
       {
-        vout.general("\n\t@@@ solver ud(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
+        vout.general("\n\t@@@ with NOISE solver ud(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
 
         fopr_c_ud    -> set_parameters(*params_clover_ud);
         fopr_c_ud    -> set_config    (U_fixed, U_fixed);
@@ -660,7 +663,7 @@ int core(int argc,char** argv)
       
         Field_F b;
         b = 0.0;
-
+        
         int    Nconv;
         double diff;
       
@@ -670,22 +673,23 @@ int core(int argc,char** argv)
             int idx = icolor + Nc * ispin;
  //           source_ud->set(b, idx);
 
-    if (T_noise == Communicator::ipe(t_dir)) {
-     int t = T_noise % Nsize[3];
+          b = 0.0;
+   if (T_noise/TnodeSites == Communicator::ipe(3)) {
+ 
+     int t = T_noise % TnodeSites;
 
-    for (int ixyz = 0; ixyz < XYZnodeSites; ++z) {
+    for (int ixyz = 0; ixyz < XYZnodeSites; ixyz++) {
           //int lsite = x + Nsize[0] * (y + Nsize[1] * z);
 
           //int isite = m_index.site(x, y, z, t);
           int isite = ixyz+T_noise*XYZnodeSites;
 
           //XXX field layout: complex as two doubles
-          b.set(2 * idx + 0, isite, 0, 1.0/XYZSites);
+           b.set(2 * idx + 0, isite, 0, 1.0/XYZsites);
           b.set(2 * idx + 1, isite, 0, 0.0);
     }
   }
-
-	  
+          
             fprop_ud -> invert_D(sq_ud_noise[idx], b, Nconv, diff); 
 
             vout.general(vl, "   %2d   %2d   %6d   %12.4e\n",
@@ -697,7 +701,7 @@ int core(int argc,char** argv)
       }
       // solver s
       {
-        vout.general("\n\t@@@ solver s(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
+        vout.general("\n\t@@@ with NOISE solver s(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
 
         fopr_c_s    -> set_parameters(*params_clover_s);
         fopr_c_s    -> set_config    (U_fixed, U_fixed);
@@ -717,21 +721,26 @@ int core(int argc,char** argv)
           for (int icolor = 0; icolor < Nc; ++icolor) {
             int idx = icolor + Nc * ispin;
  //           source_ud->set(b, idx);
+b = 0.0;
+    if (T_noise/TnodeSites  == Communicator::ipe(3)) {
+     int t = T_noise % TnodeSites;
 
-    if (T_noise == Communicator::ipe(t_dir)) {
-     int t = T_noise % Nsize[3];
-
-    for (int ixyz = 0; ixyz < XYZnodeSites; ++z) {
+    for (int ixyz = 0; ixyz < XYZnodeSites; ixyz++) {
           //int lsite = x + Nsize[0] * (y + Nsize[1] * z);
+//    for (int z = 0; z < ZnodeSites; ++z) {
+  //    for (int y = 0; y < YnodeSites; ++y) {
+    //    for (int x = 0; x < XnodeSites; ++x) {
 
-          //int isite = m_index.site(x, y, z, t);
+      //    int isite = XnodeSites * (YnodeSites * (ZnodeSites * t + z) + y) + x;
+          //m_index.site(x, y, z, t);
           int isite = ixyz+T_noise*XYZnodeSites;
 
           //XXX field layout: complex as two doubles
-          b.set(2 * idx + 0, isite, 0, 1.0/XYZSites);
+          //b = 0.0;
+          b.set(2 * idx + 0, isite, 0, 1.0/XYZsites);
           b.set(2 * idx + 1, isite, 0, 0.0);
     }
-  }
+   }
             fprop_s -> invert_D(sq_s_noise[idx], b, Nconv, diff);
           }
           vout.general(vl, "\n");
@@ -755,13 +764,14 @@ int core(int argc,char** argv)
       Hadron.set_base_name(base);
       Hadron_noise.set_base_name(base);
         char pr[50];
-        snprintf(pr,sizeof(pr),"n_",);
+        snprintf(pr,sizeof(pr),"n_");
         Hadron_noise.set_prefix_name(pr);
       
       Hadron.set_source_position(iT_src_pos);
       Hadron_noise.set_source_position(iT_src_pos);
 
       // run all green functions
+      Hadron.run_all_GF();
       Hadron_noise.run_all_GF();
 
       //
@@ -773,7 +783,7 @@ int core(int argc,char** argv)
       //
       // NBS_WF.calculate();
 
-      
+/*      
       //-- two point correlators
       //---------------------------------------------------------------------
       vout.general(vl, "\n\t@@@ 2-point correlators(begin):  \t%s\n", LocalTime());
@@ -870,6 +880,7 @@ int core(int argc,char** argv)
       vout.general(vl, "\n\t@@@ 2-point correlators(end):  \t%s\n", LocalTime());
       
 */
+/*
       //-- HAL code
       //---------------------------------------------------------------------
       //////////// T. Doi ////////////  HAL RUN PART
@@ -906,6 +917,7 @@ int core(int argc,char** argv)
       //---------------------------------------------------------------------
       // measurement end
       //---------------------------------------------------------------------
+*/
 
     } // iT_src_pos - loop over source positions
   } // iarg - loop over configurations
