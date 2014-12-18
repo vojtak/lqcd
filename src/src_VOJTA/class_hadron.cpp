@@ -441,8 +441,8 @@ void class_hadron::corr_print(double *correlator, string hadron_name)
 
     // print correlator
     for(int it = 0; it < Tsites; it++){
-      //int iT2 = (it + iT_src + 100*Tsites) % Tsites;
-      int iT2 = it;
+      int iT2 = (it + iT_src + 100*Tsites) % Tsites;
+      //int iT2 = it;
 
       char line[1000];
       snprintf(line, sizeof(line), "%4d\t%1.16e %1.16e\n",

@@ -13,3 +13,6 @@
 build/*
 configurations*
 results*
+
+#analysis folder 
+x_analysis/*
