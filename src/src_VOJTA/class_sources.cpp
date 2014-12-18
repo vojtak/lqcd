@@ -78,7 +78,7 @@ void class_sources :: generate_wall_ixyz(double* wall){
    
   for(int i=0;i<XYZnodeSites;i++){
 
-    wall[2*i]  =1.0/XYZnodeSites;
+    wall[2*i]  =1.0/XYZSites;
     wall[2*i+1]= 0.0;
   
   }
