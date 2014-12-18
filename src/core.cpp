@@ -154,8 +154,6 @@ extern void hal_run_V(int *Nodes, int *NodeSites, int *NodeCoor,
 
 static void converter(std::valarray<Field_F>& sq, double prop[]);
 
-static void propagators_solve(double * prop_ud, double * prop_s, double * source);
-
 static void usage(const char* msg=NULL,...)
 {
   Bridge::vout.general(
@@ -372,11 +370,11 @@ int core(int argc,char** argv)
   }
   
   // -- s quark fermion field
-  GammaMatrixSet *gmset_s      = NULL;
+  GammaMatrixSet    *gmset_s      = NULL;
   Fopr_Clover_eo    *fopr_c_s     = NULL;
-  Solver         *solver_s     = NULL;
-  Fprop          *fprop_s      = NULL;
-  Source         *source_s     = NULL;
+  Solver            *solver_s     = NULL;
+  Fprop             *fprop_s      = NULL;
+  Source            *source_s     = NULL;
 
   {
     string str_solver_type = params_solver_s -> get_string("solver_type");
@@ -418,23 +416,23 @@ int core(int argc,char** argv)
     }
   }
 
-      double *prop_ud        = new double[XYZTnodeSites * 3*4*3*4 *2];
-      double *prop_s         = new double[XYZTnodeSites * 3*4*3*4 *2];
+  double *prop_ud        = new double[XYZTnodeSites * 3*4*3*4 *2];
+  double *prop_s         = new double[XYZTnodeSites * 3*4*3*4 *2];
 
-      double *prop_ud_wall   = new double[XYZTnodeSites * 3*4*3*4 *2];
-      double *prop_s_wall    = new double[XYZTnodeSites * 3*4*3*4 *2];
+  double *prop_ud_wall   = new double[XYZTnodeSites * 3*4*3*4 *2];
+  double *prop_s_wall    = new double[XYZTnodeSites * 3*4*3*4 *2];
 
-      double *prop_ud_noise  = new double[XYZTnodeSites * 3*4*3*4 *2];
-      double *prop_s_noise   = new double[XYZTnodeSites * 3*4*3*4 *2];
+  double *prop_ud_noise  = new double[XYZTnodeSites * 3*4*3*4 *2];
+  double *prop_s_noise   = new double[XYZTnodeSites * 3*4*3*4 *2];
 
-      int N_sources=1;
 
-      //initialize noise source class and generate noise volumes :)
-      class_sources *sources = new class_sources();
+  int N_sources=1;
+
+  //initialize source class and generate wall and noise sources :)
+  class_sources *sources = new class_sources();
       
-
-      sources->generate_wall_source();
-      sources->generate_noise_source_vector(N_sources);
+  sources->generate_wall_source();
+  sources->generate_noise_source_vector(N_sources);
  
 
   //---------------------------------------------------------------------
@@ -463,7 +461,7 @@ int core(int argc,char** argv)
       gconf_read->read_file((Field *)U, ifname);
       delete gconf_read;
 
-      vout.general("\n\t@@@ reading %s DONE\n\t@@@ read conf(end) %s\n", ifname.c_str(), LocalTime());
+      vout.general("\n\t@@@ reading %s DONE\n\t@@@ read conf(end) %s\n\n", ifname.c_str(), LocalTime());
 
       //MPI_Barrier(MPI_COMM_WORLD);
       //BGNET_SwitchMPI();
@@ -489,14 +487,14 @@ int core(int argc,char** argv)
       double   plaq   = staple -> plaquette(*U);
       vout.general(vl, "plaq (original) = %18.14f\n", plaq);
       plaq   = staple -> plaquette(*U_fixed);
-      vout.general(vl, "plaq (fixed) = %18.14f\n", plaq);
+      vout.general(vl, "plaq (fixed)    = %18.14f\n\n", plaq);
       delete staple;
 
       PolyakovLoop       *pl     = new PolyakovLoop;
       dcomplex   ploop   = pl -> measure_ploop(*U);
       vout.general(vl, "Polyakov Loop (original) = %18.14f\n", ploop);
       ploop   = pl -> measure_ploop(*U_fixed);
-      vout.general(vl, "Polyakov Loop (fixed) = %18.14f\n", ploop);
+      vout.general(vl, "Polyakov Loop (fixed)    = %18.14f\n\n\n", ploop);
       delete pl;
     }
 
