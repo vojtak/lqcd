@@ -651,7 +651,8 @@ int core(int argc,char** argv)
       //initialize noise source class and generate noise volumes :)
       class_sources sources;
 
-      sources.run();
+      sources.generate_wall_source();
+      sources.generate_noise_source_vector(1);
       //noise_sources.print();
 
      {
@@ -663,20 +664,20 @@ int core(int argc,char** argv)
 
       //initialize hadron class
       class_hadron Hadron(prop_ud,prop_s);
-//      class_hadron Hadron_noise(prop_ud_noise,prop_s_noise);
+      class_hadron Hadron_noise(prop_ud_noise,prop_s_noise);
 
       Hadron.set_base_name(base);
-  //    Hadron_noise.set_base_name(base);
+      Hadron_noise.set_base_name(base);
         char pr[50];
         snprintf(pr,sizeof(pr),"n_");
-    //    Hadron_noise.set_prefix_name(pr);
+        Hadron_noise.set_prefix_name(pr);
       
       Hadron.set_source_position(iT_src_pos);
-     // Hadron_noise.set_source_position(iT_src_pos);
+      Hadron_noise.set_source_position(iT_src_pos);
 
       // run all green functions
       Hadron.run_all_GF();
-     // Hadron_noise.run_all_GF();
+      Hadron_noise.run_all_GF();
 
       //
       
