@@ -45,7 +45,7 @@ void class_hadron::run_GF(string hadron_name){
   memset(correlator,0,sizeof(correlator));
 
   if(MPI_rank==0){
-    printf("  +++ run_GF : calculate %s propagator        %s",
+    printf("  +++ run_GF : calculate %s propagator        %s\n",
          hadron_name.c_str(), LocalTime().c_str());
   }
   

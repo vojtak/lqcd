@@ -538,7 +538,7 @@ int core(int argc,char** argv)
 
       //initialize hadron class
    //   class_hadron Hadron(prop_ud,prop_s);
-      class_hadron Hadron_wall(prop_ud_noise,prop_s_noise);
+      class_hadron Hadron_wall(prop_ud_wall,prop_s_wall);
       class_hadron Hadron_noise(prop_ud_noise,prop_s_noise);
 
    //   Hadron.set_base_name(base);
@@ -752,8 +752,8 @@ int core(int argc,char** argv)
         corr.meson_corr(kaon,
                         gmset_ud->get_GM(gmset_ud->GAMMA5),
                         gmset_ud->get_GM(gmset_ud->GAMMA5),
-                        sq_ud,
-                        sq_s);
+                        sq_s,
+                        sq_ud);
 	
         //vout.general(vl, "create file name\n");
         char wfile[FILENAME_MAX];
@@ -784,6 +784,7 @@ int core(int argc,char** argv)
         }
       }
 
+/*
       {
         vout.general(vl, "correlator:  proton\n");
         std::valarray<dcomplex> proton(CommonParameters::Lt());
@@ -801,7 +802,7 @@ int core(int argc,char** argv)
           corr_print(proton, wfile, iT_src_pos);
         }
       }
-
+*/
 
       vout.general(vl, "\n\t@@@ 2-point correlators(end):  \t%s\n", LocalTime());
       
