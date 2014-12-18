@@ -104,7 +104,7 @@ using Bridge::vout;
 
 /* local from VOJTA */
 #include "class_global_wrapper.h"
-#include "class_noise_source.h"
+#include "class_sources.h"
 #include "class_hadron.h"
 
 
@@ -649,9 +649,9 @@ int core(int argc,char** argv)
       int N_sources=1;
 
       //initialize noise source class and generate noise volumes :)
-      class_noise_source noise_sources(N_sources);
+      class_sources sources(N_sources);
 
-      noise_sources.run();
+      sources.run();
       //noise_sources.print();
 
      {
