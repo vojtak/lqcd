@@ -20,7 +20,10 @@ class class_noise_source : public class_global_wrapper {
     int seed[2] = {(int)time(0),MPI_rank};
     RanGen.RandomInitByArray(seed,2);
 
-    // allocate memory for the noise_vectors
+    // allocate memory for the sources
+    wall_source = new double[2 * XYZnodeSites];
+    memset(wall_source,0,sizeof(wall_source));
+
     noise_vector = new double[2* N_noises * XYZnodeSites];
     memset(noise_vector,0,sizeof(noise_vector));
 
@@ -33,16 +36,22 @@ class class_noise_source : public class_global_wrapper {
   
   void run();
   void print();
-  void print_full();
+  void print_full();  //for debugging
+  
   
   double *get_noise_ixyz(int noise_num);
+
+  double *get_wall_ixyz();
 
   // =======================================
   // data members
   //
+
   int N_noises;
  
   double *noise_vector;
+
+  double *wall_source;
  
   CRandomMersenne RanGen;
 
@@ -58,8 +67,8 @@ class class_noise_source : public class_global_wrapper {
   //
 
   void generate_noise_ixyz(double *noise);
+  void generate_wall_ixyz(double *wall);
 
-  void calculate_propagator();
 
   // =======================================
   // assistant functions

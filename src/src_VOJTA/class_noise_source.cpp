@@ -26,6 +26,8 @@
 
 void class_noise_source :: run(){
 
+   generate_wall_ixyz ( wall_source );
+
    for(int n=0; n<N_noises;n++){
    
      generate_noise_ixyz ( noise_vector+2*n*XYZnodeSites );
@@ -82,7 +84,23 @@ double * class_noise_source :: get_noise_ixyz(int noise_num){
 
 }
 
+double * class_noise_source :: get_wall_ixyz(){
 
+  return wall_source;
+
+}
+
+
+void class_noise_source :: generate_wall_ixyz(double* wall){
+   
+  for(int i=0;i<XYZnodeSites;i++){
+
+    wall[2*i]  =1.0/XYZnodeSites;
+    wall[2*i+1]= 0.0;
+  
+  }
+
+}
 
 void class_noise_source :: generate_noise_ixyz(double* noise){
    
@@ -93,6 +111,5 @@ void class_noise_source :: generate_noise_ixyz(double* noise){
     noise[2*i+1]= sin(rand_num);
   
   }
-
 
 }

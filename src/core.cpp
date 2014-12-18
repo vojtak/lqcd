@@ -108,6 +108,7 @@ using Bridge::vout;
 #include "class_hadron.h"
 
 
+static void propagators_solve(Fprop* fprop_ud, Fprop* fprop_s, double * prop_ud, double * prop_s, double * source);
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -146,7 +147,10 @@ extern void hal_run_V(int *Nodes, int *NodeSites, int *NodeCoor,
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
 
+
 static void converter(std::valarray<Field_F>& sq, double prop[]);
+
+static void propagators_solve(double * prop_ud, double * prop_s, double * source);
 
 static void usage(const char* msg=NULL,...)
 {
@@ -410,6 +414,7 @@ int core(int argc,char** argv)
 
 
 
+
   // allocation (propagators)
   double *prop_ud = new double[XYZTnodeSites * 3*4*3*4 *2];
   double *prop_s  = new double[XYZTnodeSites * 3*4*3*4 *2];
@@ -501,6 +506,13 @@ int core(int argc,char** argv)
       delete pl;
     }
 
+        fopr_c_ud    -> set_parameters(*params_clover_ud);
+        fopr_c_ud    -> set_config    (U_fixed, U_fixed);
+        solver_ud    -> set_parameters(*params_solver_ud);
+
+        fopr_c_s    -> set_parameters(*params_clover_s);
+        fopr_c_s    -> set_config    (U_fixed, U_fixed);
+        solver_s    -> set_parameters(*params_solver_s);  
 
     //---------------------------------------------------------------------
     // loop w.r. to source positions
@@ -563,9 +575,9 @@ int core(int argc,char** argv)
       {
         vout.general("\n\t@@@ solver ud(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
 
-        fopr_c_ud    -> set_parameters(*params_clover_ud);
-        fopr_c_ud    -> set_config    (U_fixed, U_fixed);
-        solver_ud    -> set_parameters(*params_solver_ud);
+   //     fopr_c_ud    -> set_parameters(*params_clover_ud);
+     //   fopr_c_ud    -> set_config    (U_fixed, U_fixed);
+       //   solver_ud    -> set_parameters(*params_solver_ud);
         source_ud    -> set_parameters(*params_source_ud);
 
         for(int indx = 0; indx < Nc*Nd; indx++) sq_ud[indx] = 0.0;
@@ -595,9 +607,9 @@ int core(int argc,char** argv)
       {
         vout.general("\n\t@@@ solver s(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
 
-        fopr_c_s    -> set_parameters(*params_clover_s);
-        fopr_c_s    -> set_config    (U_fixed, U_fixed);
-        solver_s    -> set_parameters(*params_solver_s);
+  //      fopr_c_s    -> set_parameters(*params_clover_s);
+    //    fopr_c_s    -> set_config    (U_fixed, U_fixed);
+      //  solver_s    -> set_parameters(*params_solver_s);
         source_s    -> set_parameters(*params_source_s);
  
         for(int indx = 0; indx < Nc*Nd; indx++) sq_s[indx] = 0.0;
@@ -620,6 +632,12 @@ int core(int argc,char** argv)
         }
         vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
       }
+
+
+      converter(sq_ud, prop_ud);
+      converter(sq_s, prop_s);
+
+
       //---------------------------------------------------------------------
       // solvers end
       //---------------------------------------------------------------------
@@ -628,133 +646,19 @@ int core(int argc,char** argv)
       // measurement begin
       //---------------------------------------------------------------------
 
-
-      converter(sq_ud, prop_ud);
-      converter(sq_s, prop_s);
-
       int N_sources=1;
 
       //initialize noise source class and generate noise volumes :)
       class_noise_source noise_sources(N_sources);
+
       noise_sources.run();
       //noise_sources.print();
-/*
-      class_propagator noise_propagator();
-      noise_propagator.solve(prop_ud, prop_s, source)
 
-*/
-/////////////////////////////////////////////////////////////////////////////////
+     {
+      propagators_solve(fprop_ud, fprop_s, prop_ud_noise, prop_s_noise, noise_sources.get_wall_ixyz());          
+     }
 
-      PropagatorSet sq_ud_noise(Nc * Nd);
-      PropagatorSet sq_s_noise(Nc * Nd);
-      
-      int T_noise=iT_src_pos;
 
-      // ud solver
-      {
-        vout.general("\n\t@@@ with NOISE solver ud(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
-
-        fopr_c_ud    -> set_parameters(*params_clover_ud);
-        fopr_c_ud    -> set_config    (U_fixed, U_fixed);
-        solver_ud    -> set_parameters(*params_solver_ud);
-   //     source_ud    -> set_parameters(*params_source_ud);
-
-        for(int indx = 0; indx < Nc*Nd; indx++) sq_ud[indx] = 0.0;
-      
-        Field_F b;
-        b = 0.0;
-        
-        int    Nconv;
-        double diff;
-      
-        vout.general(vl, "  color spin   Nconv      diff \n");
-        for (  int ispin  = 0; ispin  < Nd; ++ispin){
-          for (int icolor = 0; icolor < Nc; ++icolor) {
-            int idx = icolor + Nc * ispin;
- //           source_ud->set(b, idx);
-
-          b = 0.0;
-   if (T_noise/TnodeSites == Communicator::ipe(3)) {
- 
-     int t = T_noise % TnodeSites;
-
-    for (int ixyz = 0; ixyz < XYZnodeSites; ixyz++) {
-          //int lsite = x + Nsize[0] * (y + Nsize[1] * z);
-
-          //int isite = m_index.site(x, y, z, t);
-          int isite = ixyz+T_noise*XYZnodeSites;
-
-          //XXX field layout: complex as two doubles
-           b.set(2 * idx + 0, isite, 0, 1.0/XYZsites);
-          b.set(2 * idx + 1, isite, 0, 0.0);
-    }
-  }
-          
-            fprop_ud -> invert_D(sq_ud_noise[idx], b, Nconv, diff); 
-
-            vout.general(vl, "   %2d   %2d   %6d   %12.4e\n",
-                         icolor, ispin, Nconv, diff);
-          }
-          vout.general(vl, "\n");
-        }
-        vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
-      }
-      // solver s
-      {
-        vout.general("\n\t@@@ with NOISE solver s(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
-
-        fopr_c_s    -> set_parameters(*params_clover_s);
-        fopr_c_s    -> set_config    (U_fixed, U_fixed);
-        solver_s    -> set_parameters(*params_solver_s);
-        source_s    -> set_parameters(*params_source_s);
- 
-        for(int indx = 0; indx < Nc*Nd; indx++) sq_s[indx] = 0.0;
-      
-        Field_F b;
-        b = 0.0;
-      
-        int    Nconv;
-        double diff;
-      
-        vout.general(vl, "  color spin   Nconv      diff\n");
-        for (  int ispin  = 0; ispin  < Nd; ++ispin) {
-          for (int icolor = 0; icolor < Nc; ++icolor) {
-            int idx = icolor + Nc * ispin;
- //           source_ud->set(b, idx);
-b = 0.0;
-    if (T_noise/TnodeSites  == Communicator::ipe(3)) {
-     int t = T_noise % TnodeSites;
-
-    for (int ixyz = 0; ixyz < XYZnodeSites; ixyz++) {
-          //int lsite = x + Nsize[0] * (y + Nsize[1] * z);
-//    for (int z = 0; z < ZnodeSites; ++z) {
-  //    for (int y = 0; y < YnodeSites; ++y) {
-    //    for (int x = 0; x < XnodeSites; ++x) {
-
-      //    int isite = XnodeSites * (YnodeSites * (ZnodeSites * t + z) + y) + x;
-          //m_index.site(x, y, z, t);
-          int isite = ixyz+T_noise*XYZnodeSites;
-
-          //XXX field layout: complex as two doubles
-          //b = 0.0;
-          b.set(2 * idx + 0, isite, 0, 1.0/XYZsites);
-          b.set(2 * idx + 1, isite, 0, 0.0);
-    }
-   }
-            fprop_s -> invert_D(sq_s_noise[idx], b, Nconv, diff);
-          }
-          vout.general(vl, "\n");
-        }
-        vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
-      }
-      //---------------------------------------------------------------------
-      // solvers end
-      //---------------------------------------------------------------------
-
-      converter(sq_ud_noise, prop_ud_noise);
-      converter(sq_s_noise,  prop_s_noise);
-
-////////////////////////////////////////////////////////////////
 
 
       //initialize hadron class
@@ -1037,3 +941,113 @@ static const char* LocalTime()
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
+
+
+
+static void propagators_solve(Fprop* fprop_ud, Fprop* fprop_s, double * prop_ud, double * prop_s, double * source){
+
+      typedef std::valarray<Field_F> PropagatorSet;
+
+
+      PropagatorSet sq_ud(Nc * Nd);
+      PropagatorSet sq_s(Nc * Nd);
+
+       int T_noise=0;
+
+      // ud solver
+      {
+        vout.general("\n\t@@@ with NOISE solver ud(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
+
+
+        for(int indx = 0; indx < Nc*Nd; indx++) sq_ud[indx] = 0.0;
+      
+        Field_F b;
+        
+        int    Nconv;
+        double diff;
+      
+        vout.general("  color spin   Nconv      diff \n");
+        for (  int ispin  = 0; ispin  < Nd; ++ispin){
+          for (int icolor = 0; icolor < Nc; ++icolor) {
+            int idx = icolor + Nc * ispin;
+ //           source_ud->set(b, idx);
+
+          b = 0.0;
+          if (T_noise/TnodeSites == Communicator::ipe(3)) {
+ 
+          int t = T_noise % TnodeSites;
+
+          for (int ixyz = 0; ixyz < XYZnodeSites; ixyz++) {
+          //int lsite = x + Nsizeer study shows students from wealthier families are increasingly more likely to graduate from college than students from low-income families. Statistics from the federal [0] * (y + Nsize[1] * z);
+
+          //int isite = m_index.site(x, y, z, t);
+          int isite = ixyz+T_noise*XYZnodeSites;
+
+          //XXX field layout: complex as two doubles
+           b.set(2 * idx + 0, isite, 0, 1.0/XYZsites);
+          b.set(2 * idx + 1, isite, 0, 0.0);
+    }
+  }
+          
+            fprop_ud -> invert_D(sq_ud[idx], b, Nconv, diff); 
+
+            vout.general("   %2d   %2d   %6d   %12.4e\n",
+                         icolor, ispin, Nconv, diff);
+          }
+          vout.general("\n");
+        }
+        vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
+      }
+      // solver s
+      {
+        vout.general("\n\t@@@ with NOISE solver s(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
+
+        for(int indx = 0; indx < Nc*Nd; indx++) sq_s[indx] = 0.0;
+      
+        Field_F b;
+        b = 0.0;
+      
+        int    Nconv;
+        double diff;
+      
+        vout.general( "  color spin   Nconv      diff\n");
+        for (  int ispin  = 0; ispin  < Nd; ++ispin) {
+          for (int icolor = 0; icolor < Nc; ++icolor) {
+            int idx = icolor + Nc * ispin;
+ //           source_ud->set(b, idx);
+b = 0.0;
+    if (T_noise/TnodeSites  == Communicator::ipe(3)) {
+     int t = T_noise % TnodeSites;
+
+    for (int ixyz = 0; ixyz < XYZnodeSites; ixyz++) {
+          //int lsite = x + Nsize[0] * (y + Nsize[1] * z);
+//    for (int z = 0; z < ZnodeSites; ++z) {
+  //    for (int y = 0; y < YnodeSites; ++y) {
+    //    for (int x = 0; x < XnodeSites; ++x) {
+
+      //    int isite = XnodeSites * (YnodeSites * (ZnodeSites * t + z) + y) + x;
+          //m_index.site(x, y, z, t);
+          int isite = ixyz+T_noise*XYZnodeSites;
+
+          //XXX field layout: complex as two doubles
+          //b = 0.0;
+          b.set(2 * idx + 0, isite, 0, 1.0/XYZsites);
+          b.set(2 * idx + 1, isite, 0, 0.0);
+    }
+   }
+            fprop_s -> invert_D(sq_s[idx], b, Nconv, diff);
+          }
+          vout.general("\n");
+        }
+        vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
+      }
+      //---------------------------------------------------------------------
+      // solvers end
+      //---------------------------------------------------------------------
+
+  converter(sq_ud, prop_ud);
+  converter(sq_s,  prop_s );
+
+
+}      
+
