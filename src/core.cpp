@@ -441,6 +441,7 @@ int core(int argc,char** argv)
 
 //  for(int iarg = 0; iarg <1; iarg++){
   for(int iarg = 0; iarg < gfile_list.size(); iarg++){
+   printf("size = %d, \n", gfile_list.size());
 
     string ifname(gfile_list[iarg]);
     string base = ifname.substr(ifname.find_last_of('/')+1);
@@ -568,7 +569,7 @@ int core(int argc,char** argv)
 
    ///////////////////====================================================
    // remnants of other codes
-
+   ///*
     string dir_base="results/"+base+"/";
     //vout.general("dir = %s",dir_base);
     if(Communicator::nodeid() == 0){
@@ -843,7 +844,7 @@ int core(int argc,char** argv)
       // measurement end
       //---------------------------------------------------------------------
  
-
+   //*/
    ///////////////////====================================================
    // remnants of other codes END
    
