@@ -441,7 +441,7 @@ int core(int argc,char** argv)
 
 //  for(int iarg = 0; iarg <1; iarg++){
   for(int iarg = 0; iarg < gfile_list.size(); iarg++){
-   printf("size = %d, \n", gfile_list.size());
+
 
     string ifname(gfile_list[iarg]);
     string base = ifname.substr(ifname.find_last_of('/')+1);
@@ -847,14 +847,15 @@ int core(int argc,char** argv)
    //*/
    ///////////////////====================================================
    // remnants of other codes END
+
    
 
     } // iT_src_pos - loop over source positions
   } // iarg - loop over configurations
 
   // ####  tydy up  ####
-  delete[] sources;
-  
+  delete sources;
+
   delete[] prop_s;
   delete[] prop_ud;
 
