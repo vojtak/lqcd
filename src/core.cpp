@@ -516,8 +516,8 @@ int core(int argc,char** argv)
     // loop w.r. to source positions
     //---------------------------------------------------------------------
 
-    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    //for(int iT_src_pos=11;iT_src_pos<13;iT_src_pos++){
+    //for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
+    for(int iT_src_pos=0;iT_src_pos<9;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
@@ -569,7 +569,7 @@ int core(int argc,char** argv)
 
    ///////////////////====================================================
    // remnants of other codes
-   ///*
+   /*
     string dir_base="results/"+base+"/";
     //vout.general("dir = %s",dir_base);
     if(Communicator::nodeid() == 0){
@@ -783,25 +783,25 @@ int core(int argc,char** argv)
         }
       }
 
-/*
-      {
-        vout.general(vl, "correlator:  proton\n");
-        std::valarray<dcomplex> proton(CommonParameters::Lt());
-        corr.proton_corr(proton,
-                        gmset_ud->get_GM(gmset_ud->GAMMA5),  // DONT WORK PROPERLY
-                        sq_ud,
-                        sq_ud);
-	
-        //vout.general(vl, "create file name\n");
-        char wfile[FILENAME_MAX];
-        snprintf(wfile,	sizeof(wfile), "%sproton%02d",
-                 dirname.c_str(),iT_src_pos);
 
-        if(Communicator::nodeid() == 0){
-          corr_print(proton, wfile, iT_src_pos);
-        }
-      }
-*/
+//      {
+//        vout.general(vl, "correlator:  proton\n");
+//        std::valarray<dcomplex> proton(CommonParameters::Lt());
+//        corr.proton_corr(proton,
+//                        gmset_ud->get_GM(gmset_ud->GAMMA5),  // DONT WORK PROPERLY
+//                        sq_ud,
+//                        sq_ud);
+//	
+//        //vout.general(vl, "create file name\n");
+//        char wfile[FILENAME_MAX];
+//        snprintf(wfile,	sizeof(wfile), "%sproton%02d",
+//                 dirname.c_str(),iT_src_pos);
+//
+//        if(Communicator::nodeid() == 0){
+//          corr_print(proton, wfile, iT_src_pos);
+//        }
+//      }
+
 
       vout.general(vl, "\n\t@@@ 2-point correlators(end):  \t%s\n", LocalTime());
       
@@ -844,7 +844,7 @@ int core(int argc,char** argv)
       // measurement end
       //---------------------------------------------------------------------
  
-   //*/
+   */
    ///////////////////====================================================
    // remnants of other codes END
 
