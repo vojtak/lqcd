@@ -18,8 +18,6 @@ class class_global_wrapper{
     MPI_Comm_size(MPI_COMM_WORLD,&MPI_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&MPI_rank);
 
-    prefix="";
-    
     Nc   = CommonParameters::Nc();
     Nd   = CommonParameters::Nd();
     Ndim = CommonParameters::Ndim();
@@ -71,7 +69,7 @@ class class_global_wrapper{
   void set_base_name(string base_in){
     base = base_in;
   };
-  string prefix; 	        
+  string prefix=""; 	        
   void set_prefix_name(string prefix_in){
     prefix = prefix_in;
   };
