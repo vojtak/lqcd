@@ -117,8 +117,8 @@
   // This works with most compilers
   typedef signed int          int32_t;
   typedef unsigned int       uint32_t;
-  typedef long long           int64_t;
-  typedef unsigned long long uint64_t;
+  //typedef long long           int64_t;
+  //typedef unsigned long long uint64_t;
   #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
 #endif
 
