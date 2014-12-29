@@ -18,6 +18,39 @@ class class_global_wrapper{
     MPI_Comm_size(MPI_COMM_WORLD,&MPI_size);
     MPI_Comm_rank(MPI_COMM_WORLD,&MPI_rank);
 
+    Nc   = CommonParameters::Nc();
+    Nd   = CommonParameters::Nd();
+    Ndim = CommonParameters::Ndim();
+    Nvol = CommonParameters::Nvol();
+
+    XnodeSites = CommonParameters::Nx();
+    YnodeSites = CommonParameters::Ny();
+    ZnodeSites = CommonParameters::Nz();
+    TnodeSites = CommonParameters::Nt();
+
+    Xsites     = CommonParameters::Lx();
+    Ysites     = CommonParameters::Ly();
+    Zsites     = CommonParameters::Lz();
+    Tsites     = CommonParameters::Lt();
+
+    XnodeCoor  = Communicator::ipe(0);
+    YnodeCoor  = Communicator::ipe(1);
+    ZnodeCoor  = Communicator::ipe(2);
+    TnodeCoor  = Communicator::ipe(3);
+
+    Xnodes     = Communicator::npe(0);
+    Ynodes     = Communicator::npe(1);
+    Znodes     = Communicator::npe(2);
+    Tnodes     = Communicator::npe(3);
+
+    XYZnodeSites = XnodeSites * YnodeSites * ZnodeSites;
+    XYZsites     = Xsites     * Ysites     * Zsites;
+  
+    XYZTnodeSites = XYZnodeSites * TnodeSites;
+    XYZTsites     = XYZsites     * Tsites;
+
+    XYZnodeCoor = XnodeCoor + Xnodes * (YnodeCoor + Ynodes * ZnodeCoor);
+
   }
 
   // =======================================
@@ -52,38 +85,38 @@ class class_global_wrapper{
   // =======================================
   // global parameters
   //
-  int Nc   = CommonParameters::Nc();
-  int Nd   = CommonParameters::Nd();
-  int Ndim = CommonParameters::Ndim();
-  int Nvol = CommonParameters::Nvol();
+  int Nc;
+  int Nd;
+  int Ndim;
+  int Nvol;
 
-  int XnodeSites = CommonParameters::Nx();
-  int YnodeSites = CommonParameters::Ny();
-  int ZnodeSites = CommonParameters::Nz();
-  int TnodeSites = CommonParameters::Nt();
+  int XnodeSites;
+  int YnodeSites;
+  int ZnodeSites;
+  int TnodeSites;
 
-  int Xsites     = CommonParameters::Lx();
-  int Ysites     = CommonParameters::Ly();
-  int Zsites     = CommonParameters::Lz();
-  int Tsites     = CommonParameters::Lt();
+  int Xsites;
+  int Ysites;
+  int Zsites;
+  int Tsites;
 
-  int XnodeCoor  = Communicator::ipe(0);
-  int YnodeCoor  = Communicator::ipe(1);
-  int ZnodeCoor  = Communicator::ipe(2);
-  int TnodeCoor  = Communicator::ipe(3);
+  int XnodeCoor;
+  int YnodeCoor;
+  int ZnodeCoor;
+  int TnodeCoor;
 
-  int Xnodes     = Communicator::npe(0);
-  int Ynodes     = Communicator::npe(1);
-  int Znodes     = Communicator::npe(2);
-  int Tnodes     = Communicator::npe(3);
+  int Xnodes;
+  int Ynodes;
+  int Znodes;
+  int Tnodes;
 
-  int XYZnodeSites = XnodeSites * YnodeSites * ZnodeSites;
-  int XYZsites     = Xsites     * Ysites     * Zsites;
+  int XYZnodeSites;
+  int XYZsites;
   
-  int XYZTnodeSites = XYZnodeSites * TnodeSites;
-  int XYZTsites     = XYZsites     * Tsites;
+  int XYZTnodeSites;
+  int XYZTsites;
 
-  int XYZnodeCoor = XnodeCoor + Xnodes * (YnodeCoor + Ynodes * ZnodeCoor);
+  int XYZnodeCoor;
 
 
   // =======================================
