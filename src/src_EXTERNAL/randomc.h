@@ -96,10 +96,43 @@
 #ifndef RANDOMC_H
 #define RANDOMC_H
 
+<<<<<<< HEAD
 #include <inttypes.h>
 #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
 
 
+=======
+  #include <inttypes.h>
+  #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
+
+/*
+// Define integer types with known size: int32_t, uint32_t, int64_t, uint64_t.
+// If this doesn't work then insert compiler-specific definitions here:
+#if defined(__GNUC__)
+  // Compilers supporting C99 or C++0x have inttypes.h defining these integer types
+  #include <inttypes.h>
+  #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
+#elif defined(_WIN16) || defined(__MSDOS__) || defined(_MSDOS) 
+   // 16 bit systems use long int for 32 bit integer
+  typedef   signed long int int32_t;
+  typedef unsigned long int uint32_t;
+#elif defined(_MSC_VER)
+  // Microsoft have their own definition
+  typedef   signed __int32  int32_t;
+  typedef unsigned __int32 uint32_t;
+  typedef   signed __int64  int64_t;
+  typedef unsigned __int64 uint64_t;
+  #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
+#else
+  // This works with most compilers
+  typedef signed int          int32_t;
+  typedef unsigned int       uint32_t;
+  typedef long long           int64_t;
+  typedef unsigned long long uint64_t;
+  #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
+#endif
+*/
+>>>>>>> 505e4e77f7e8d2c0f57bcbe1dd3d6117087c418d
 
 /***********************************************************************
 System-specific user interface functions
