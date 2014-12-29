@@ -61,7 +61,7 @@
 * The frequencies of all output values are exactly the same for an 
 * infinitely long sequence. (Only relevant for extremely long sequences).
 *
-* uint32_t BRandom();
+* uint32_tt BRandom();
 * Gives 32 random bits. 
 *
 *
@@ -96,7 +96,7 @@
 #ifndef RANDOMC_H
 #define RANDOMC_H
 
-// Define integer types with known size: int32_t, uint32_t, int64_t, uint64_t.
+// Define integer types with known size: int32_tt, uint32_tt, int64_tt, uint64_tt.
 // If this doesn't work then insert compiler-specific definitions here:
 #if defined(__GNUC__)
   // Compilers supporting C99 or C++0x have inttypes.h defining these integer types
@@ -104,21 +104,21 @@
   #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
 #elif defined(_WIN16) || defined(__MSDOS__) || defined(_MSDOS) 
    // 16 bit systems use long int for 32 bit integer
-  typedef   signed long int int32_t;
-  typedef unsigned long int uint32_t;
+  typedef   signed long int int32_tt;
+  typedef unsigned long int uint32_tt;
 #elif defined(_MSC_VER)
   // Microsoft have their own definition
-  typedef   signed __int32  int32_t;
-  typedef unsigned __int32 uint32_t;
-  typedef   signed __int64  int64_t;
-  typedef unsigned __int64 uint64_t;
+  typedef   signed __int32  int32_tt;
+  typedef unsigned __int32 uint32_tt;
+  typedef   signed __int64  int64_tt;
+  typedef unsigned __int64 uint64_tt;
   #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
 #else
   // This works with most compilers
-  typedef signed int          int32_t;
-  typedef unsigned int       uint32_t;
-  typedef long long           int64_t;
-  typedef unsigned long long uint64_t;
+  typedef signed int          int32_tt;
+  typedef unsigned int       uint32_tt;
+  typedef long long           int64_tt;
+  typedef unsigned long long uint64_tt;
   #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
 #endif
 
@@ -173,13 +173,13 @@ public:
    int IRandom (int min, int max);     // Output random integer
    int IRandomX(int min, int max);     // Output random integer, exact
    double Random();                    // Output random float
-   uint32_t BRandom();                 // Output random bits
+   uint32_tt BRandom();                 // Output random bits
 private:
    void Init0(int seed);               // Basic initialization procedure
-   uint32_t mt[MERS_N];                // State vector
+   uint32_tt mt[MERS_N];                // State vector
    int mti;                            // Index into mt
-   uint32_t LastInterval;              // Last interval length for IRandomX
-   uint32_t RLimit;                    // Rejection limit used by IRandomX
+   uint32_tt LastInterval;              // Last interval length for IRandomX
+   uint32_tt RLimit;                    // Rejection limit used by IRandomX
 };    
 
 
@@ -188,11 +188,11 @@ public:
    void RandomInit(int seed);          // Initialization
    int IRandom(int min, int max);      // Get integer random number in desired interval
    double Random();                    // Get floating point random number
-   uint32_t BRandom();                 // Output random bits
+   uint32_tt BRandom();                 // Output random bits
    CRandomMother(int seed) {           // Constructor
       RandomInit(seed);}
 protected:
-   uint32_t x[5];                      // History buffer
+   uint32_tt x[5];                      // History buffer
 };
 
 #endif // __cplusplus
