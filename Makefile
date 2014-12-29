@@ -49,7 +49,7 @@ HAL_LIBS = $(HAL_DIR)/hal.a  $(HOME)/LQCD/SC/lib/libfftw3.a
 
 # compiler flags if different from Bridge++
 #CFLAGS   = -O3 -fopenmp -w  # -O3 optimize, -fopenmp use openMP, -w suppress warnings
-CXXFLAGS += -O3 -fopenmp -w
+#CXXFLAGS += -O3 -fopenmp -w
 #LDFLAGS  =  -O3 -fopenmp -w
 
 
