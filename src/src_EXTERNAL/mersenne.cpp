@@ -26,7 +26,7 @@
 
 void CRandomMersenne::Init0(int seed) {
    // Seed generator
-   const uint32_tt factor = 1812433253UL;
+   const uint32_t factor = 1812433253UL;
    mt[0]= seed;
    for (mti=1; mti < MERS_N; mti++) {
       mt[mti] = (factor * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
@@ -55,7 +55,7 @@ void CRandomMersenne::RandomInitByArray(int const seeds[], int NumSeeds) {
    i = 1;  j = 0;
    k = (MERS_N > NumSeeds ? MERS_N : NumSeeds);
    for (; k; k--) {
-      mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL)) + (uint32_tt)seeds[j] + j;
+      mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL)) + (uint32_t)seeds[j] + j;
       i++; j++;
       if (i >= MERS_N) {mt[0] = mt[MERS_N-1]; i=1;}
       if (j >= NumSeeds) j=0;}
@@ -70,15 +70,15 @@ void CRandomMersenne::RandomInitByArray(int const seeds[], int NumSeeds) {
 }
 
 
-uint32_tt CRandomMersenne::BRandom() {
+uint32_t CRandomMersenne::BRandom() {
    // Generate 32 random bits
-   uint32_tt y;
+   uint32_t y;
 
    if (mti >= MERS_N) {
       // Generate MERS_N words at one time
-      const uint32_tt LOWER_MASK = (1LU << MERS_R) - 1;       // Lower MERS_R bits
-      const uint32_tt UPPER_MASK = 0xFFFFFFFF << MERS_R;      // Upper (32 - MERS_R) bits
-      static const uint32_tt mag01[2] = {0, MERS_A};
+      const uint32_t LOWER_MASK = (1LU << MERS_R) - 1;       // Lower MERS_R bits
+      const uint32_t UPPER_MASK = 0xFFFFFFFF << MERS_R;      // Upper (32 - MERS_R) bits
+      static const uint32_t mag01[2] = {0, MERS_A};
 
       int kk;
       for (kk=0; kk < MERS_N-MERS_M; kk++) {    
@@ -119,7 +119,7 @@ int CRandomMersenne::IRandom(int min, int max) {
       if (max == min) return min; else return 0x80000000;
    }
    // Multiply interval with random and truncate
-   int r = int((double)(uint32_tt)(max - min + 1) * Random() + min); 
+   int r = int((double)(uint32_t)(max - min + 1) * Random() + min); 
    if (r > max) r = max;
    return r;
 }
@@ -135,41 +135,41 @@ int CRandomMersenne::IRandomX(int min, int max) {
    }
 #ifdef  INT64_SUPPORTED
    // 64 bit integers available. Use multiply and shift method
-   uint32_tt interval;                    // Length of interval
-   uint64_tt longran;                     // Random bits * interval
-   uint32_tt iran;                        // Longran / 2^32
-   uint32_tt remainder;                   // Longran % 2^32
+   uint32_t interval;                    // Length of interval
+   uint64_t longran;                     // Random bits * interval
+   uint32_t iran;                        // Longran / 2^32
+   uint32_t remainder;                   // Longran % 2^32
 
-   interval = uint32_tt(max - min + 1);
+   interval = uint32_t(max - min + 1);
    if (interval != LastInterval) {
       // Interval length has changed. Must calculate rejection limit
       // Reject when remainder >= 2^32 / interval * interval
       // RLimit will be 0 if interval is a power of 2. No rejection then
-      RLimit = uint32_tt(((uint64_tt)1 << 32) / interval) * interval - 1;
+      RLimit = uint32_t(((uint64_t)1 << 32) / interval) * interval - 1;
       LastInterval = interval;
    }
    do { // Rejection loop
-      longran  = (uint64_tt)BRandom() * interval;
-      iran = (uint32_tt)(longran >> 32);
-      remainder = (uint32_tt)longran;
+      longran  = (uint64_t)BRandom() * interval;
+      iran = (uint32_t)(longran >> 32);
+      remainder = (uint32_t)longran;
    } while (remainder > RLimit);
    // Convert back to signed and return result
-   return (int32_tt)iran + min;
+   return (int32_t)iran + min;
 
 #else
    // 64 bit integers not available. Use modulo method
-   uint32_tt interval;                    // Length of interval
-   uint32_tt bran;                        // Random bits
-   uint32_tt iran;                        // bran / interval
-   uint32_tt remainder;                   // bran % interval
+   uint32_t interval;                    // Length of interval
+   uint32_t bran;                        // Random bits
+   uint32_t iran;                        // bran / interval
+   uint32_t remainder;                   // bran % interval
 
-   interval = uint32_tt(max - min + 1);
+   interval = uint32_t(max - min + 1);
    if (interval != LastInterval) {
       // Interval length has changed. Must calculate rejection limit
       // Reject when iran = 2^32 / interval
       // We can't make 2^32 so we use 2^32-1 and correct afterwards
-      RLimit = (uint32_tt)0xFFFFFFFF / interval;
-      if ((uint32_tt)0xFFFFFFFF % interval == interval - 1) RLimit++;
+      RLimit = (uint32_t)0xFFFFFFFF / interval;
+      if ((uint32_t)0xFFFFFFFF % interval == interval - 1) RLimit++;
    }
    do { // Rejection loop
       bran = BRandom();
@@ -177,7 +177,7 @@ int CRandomMersenne::IRandomX(int min, int max) {
       remainder = bran % interval;
    } while (iran >= RLimit);
    // Convert back to signed and return result
-   return (int32_tt)remainder + min;
+   return (int32_t)remainder + min;
 
 #endif
 }
