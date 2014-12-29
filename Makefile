@@ -39,8 +39,7 @@ BUILD_DIR = build
 # HAL library
 HAL_DIR = $(HOME)/LQCD/SC.hadron_force.2014-04-24
 
-INCLUDES_HAL = -I$(HOME)/LQCD/SC/include
-#INCLUDES_HAL += -I$(HAL_DIR) -I$(HAL_DIR)/include 
+INCLUDES_HAL = -I$(HAL_DIR) -I$(HAL_DIR)/include -I$(HOME)/LQCD/SC/include
 HAL_LIBS = $(HAL_DIR)/hal.a  $(HOME)/LQCD/SC/lib/libfftw3.a
 
 
