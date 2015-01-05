@@ -1,0 +1,31 @@
+# this is a sample parameter file
+
+Fopr_Clover:
+  ## gamma_matrix_type = {Chiral,Dirac}
+  gamma_matrix_type  : Dirac
+  hopping_parameter  : 0.103750
+  clover_coefficient : 1.53000
+  boundary_condition : [1,1,1,1]
+  ## verbose_level = {Crucial,General,Detailed,Paranoiac}
+  verbose_level      : Paranoiac
+
+Source:
+  ## source_type = {Local,Exponential_Tsukuba,Wall}
+  source_type     : Wall
+  ## additional parameters for Exponential, factor * exp(- slope * r)
+  #factor          : 1.20
+  #slope           : 0.20
+  source_position : [0,0,0,0]
+  ## verbose_level = {Crucial,General,Detailed,Paranoiac}
+  verbose_level   : Paranoiac
+
+Solver:
+  ## solver_type = {CG,BiCGStab_Cmplx,BiCGStab_L_Cmplx,BiCGStab_DS_L_Cmplx,BiCGStab_IDS_L_Cmplx,GMRES_m_Cmplx}
+  solver_type                         : BiCGStab
+  maximum_number_of_iteration         : 10000
+  convergence_criterion_squared       : 1.0e-24
+  ## additional parameters for each solver
+  number_of_orthonormal_vectors       : 2
+  tolerance_for_DynamicSelection_of_L : 0.1
+  ## verbose_level = {Crucial,General,Detailed,Paranoiac}
+  verbose_level                       : Paranoiac
