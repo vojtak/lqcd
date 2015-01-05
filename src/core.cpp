@@ -516,8 +516,8 @@ int core(int argc,char** argv)
     // loop w.r. to source positions
     //---------------------------------------------------------------------
 
-    //for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=0;iT_src_pos<9;iT_src_pos++){
+    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
+    //for(int iT_src_pos=0;iT_src_pos<9;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
@@ -532,7 +532,7 @@ int core(int argc,char** argv)
                         fprop_ud, fprop_s, 
                         prop_ud_noise, prop_s_noise, 
                         iT_src_pos, sources->get_noise_ixyz(0));          
-    }
+     }
 
 
       //initialize hadron class
