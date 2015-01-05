@@ -27,17 +27,18 @@ class class_sources : public class_global_wrapper {
   
   void run();
    
+  void generate_point_source(int X_coor, int Y_coor, int Z_coor);
   void generate_wall_source();
   void generate_noise_source_vector(int N_noises_in);
+
 
   void print();       //for debugging
   void print_full();  //for debugging
   
 
-  
-  double *get_noise_ixyz(int noise_num);
-
+  double *get_point_ixyz();
   double *get_wall_ixyz();
+  double *get_noise_ixyz(int noise_num);
 
   // =======================================
   // data members
@@ -45,9 +46,12 @@ class class_sources : public class_global_wrapper {
 
   int N_noises;
  
-  double *noise_sources_vector;
+
+  double *point_source;
 
   double *wall_source;
+
+  double *noise_sources_vector;
  
   CRandomMersenne RanGen;
 
@@ -62,8 +66,9 @@ class class_sources : public class_global_wrapper {
   // key functions
   //
 
-  void generate_noise_ixyz(double *noise);
+  void generate_point_ixyz(double *point, int X_coor, int Y_coor, int Z_coor);
   void generate_wall_ixyz(double *wall);
+  void generate_noise_ixyz(double *noise);
 
 
   // =======================================

@@ -108,6 +108,11 @@ using Bridge::vout;
 #include "class_sources.h"
 #include "class_hadron.h"
 
+/* local from EXTERNAL */
+#include "fft3d.h"
+#include "fftw3.h"
+
+
 
 static void propagators_solve(string label,
                               Fprop* fprop_ud, Fprop* fprop_s, 
@@ -439,8 +444,8 @@ int core(int argc,char** argv)
   // main loop w.r. to gauge configurations
   //---------------------------------------------------------------------
 
-//  for(int iarg = 0; iarg <1; iarg++){
-  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
+  for(int iarg = 0; iarg <1; iarg++){
+//  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
 
 
     string ifname(gfile_list[iarg]);
@@ -516,8 +521,8 @@ int core(int argc,char** argv)
     // loop w.r. to source positions
     //---------------------------------------------------------------------
 
-    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    //for(int iT_src_pos=0;iT_src_pos<9;iT_src_pos++){
+    //for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
+    for(int iT_src_pos=4;iT_src_pos<6;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
@@ -557,6 +562,15 @@ int core(int argc,char** argv)
    //   Hadron.run_all_GF();
       Hadron_wall.run_all_GF();
       Hadron_noise.run_all_GF();
+
+
+      // FFT test
+      
+      
+      
+      
+      ///////////////////////////////////////////////////////////
+
 
       //
       

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 
+
 #include "COMPLEX.h"
 
 //#include <util/gjp.h>
@@ -23,11 +24,9 @@
 
 #include "fft3d.h"
 
-
 /* local from Bridge++ */
 #include "communicator.h"
 #include "commonParameters.h"
-
 
 //using namespace cps;
 
@@ -40,7 +39,6 @@
 #ifndef NDEBUG
 #define NDEBUG 0
 #endif
-
 
 //typedef std::complex<double> COMPLEX;
 

@@ -26,10 +26,25 @@
 
 void class_sources :: run(){
 
+   generate_point_source(2,1,11);
+
    generate_wall_source();
 
    generate_noise_source_vector(1);
    
+}
+
+
+/////////////////////////////////////////////////////////////////
+
+void class_sources :: generate_point_source(int X_coor, int Y_coor, int Z_coor){
+
+   // allocate memory for the sources
+   point_source = new double[2 * XYZnodeSites];
+   memset(point_source,0,sizeof(point_source));
+
+   generate_point_ixyz ( wall_source, X_coor,Y_coor,Z_coor );
+
 }
 
 
@@ -61,15 +76,52 @@ void class_sources :: generate_noise_source_vector(int N_noises_in){
 }
 
 
+/////////////////////////////////////////////////////////////////
+
+
+double * class_sources :: get_point_ixyz(){
+
+  return point_source;
+
+}
+
+
+double * class_sources :: get_wall_ixyz(){
+
+  return wall_source;
+
+}
+
+
 double * class_sources :: get_noise_ixyz(int noise_num){
 
   return noise_sources_vector+2*noise_num*XYZnodeSites;
 
 }
 
-double * class_sources :: get_wall_ixyz(){
 
-  return wall_source;
+/////////////////////////////////////////////////////////////////
+
+
+void class_sources :: generate_point_ixyz(double *point, int X_coor, int Y_coor, int Z_coor){
+
+  int X_coor_node, Y_coor_node, Z_coor_node;
+
+  if (X_coor/XnodeSites == Communicator::ipe(0)){
+    if (Y_coor/YnodeSites == Communicator::ipe(1)){
+      if (Z_coor/ZnodeSites == Communicator::ipe(2)){
+        
+        X_coor_node = X_coor % XnodeSites;
+        Y_coor_node = Y_coor % XnodeSites;
+        Z_coor_node = Z_coor % XnodeSites;
+
+
+        point[2 * (X_coor_node + XnodeSites * (Y_coor_node + YnodeSites * Z_coor_node))]  =1.0;
+
+
+      }
+    }
+  }
 
 }
 
@@ -85,6 +137,7 @@ void class_sources :: generate_wall_ixyz(double* wall){
 
 }
 
+
 void class_sources :: generate_noise_ixyz(double* noise){
    
   for(int i=0;i<XYZnodeSites;i++){
@@ -98,7 +151,7 @@ void class_sources :: generate_noise_ixyz(double* noise){
 }
 
 
-
+/////////////////////////////////////////////////////////////////
 
 
 void class_sources :: print(){
