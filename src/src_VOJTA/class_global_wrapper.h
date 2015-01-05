@@ -19,7 +19,7 @@ class class_global_wrapper{
     MPI_Comm_rank(MPI_COMM_WORLD,&MPI_rank);
 
     prefix="";
-    
+
     Nc   = CommonParameters::Nc();
     Nd   = CommonParameters::Nd();
     Ndim = CommonParameters::Ndim();

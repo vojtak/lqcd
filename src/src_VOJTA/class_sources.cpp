@@ -111,7 +111,7 @@ void class_sources :: print(){
       printf("MPI %2i ... n= %2i ... i %2i   ran_num %1.16e %1.16e I, %1.16e %1.16e I, \tnorm %1.16e\n", 
                MPI_rank, n , i , noise_sources_vector[2*(n*XYZnodeSites+i)],noise_sources_vector[2*(n*XYZnodeSites+i)+1], 
                Real(((COMPLEX*)noise_sources_vector)[n*XYZnodeSites+i]),Imag(((COMPLEX*)noise_sources_vector)[n*XYZnodeSites+i]),
-               ((COMPLEX*)noise_sources_vector)[n*XYZnodeSites+i]*Conj(((COMPLEX*)noise_sources_vector)[n*XYZnodeSites+i])
+               Real(((COMPLEX*)noise_sources_vector)[n*XYZnodeSites+i]*Conj(((COMPLEX*)noise_sources_vector)[n*XYZnodeSites+i]))
                );
     }
 
@@ -133,7 +133,7 @@ void class_sources :: print_full(){
       printf("MPI %2i ... n= %2i ... i %2i   ran_num %1.16e %1.16e I, %1.16e %1.16e I, norm %1.16e\n", 
                MPI_rank, -1 , i , noise_sources_vector[2*i],noise_sources_vector[2*i+1], 
                Real(((COMPLEX*)noise_sources_vector)[i]),Imag(((COMPLEX*)noise_sources_vector)[i]),
-               ((COMPLEX*)noise_sources_vector)[i]*Conj(((COMPLEX*)noise_sources_vector)[i])
+               Real(((COMPLEX*)noise_sources_vector)[i]*Conj(((COMPLEX*)noise_sources_vector)[i]))
                );
    }
 //  for(int i=0;i< N_noises * XnodeSites;i++){

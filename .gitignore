@@ -7,6 +7,8 @@
 #logs and errors
 *log*
 *error*
+*.out*
+*.err*
 
 #binaries, configurations, and results
 

@@ -96,9 +96,9 @@
 #ifndef RANDOMC_H
 #define RANDOMC_H
 
-
 #include <inttypes.h>
 #define INT64_SUPPORTED // Remove this if the compiler doesn't support 64-bit integers
+
 
 /***********************************************************************
 System-specific user interface functions
