@@ -424,6 +424,9 @@ int core(int argc,char** argv)
   double *prop_ud        = new double[XYZTnodeSites * 3*4*3*4 *2];
   double *prop_s         = new double[XYZTnodeSites * 3*4*3*4 *2];
 
+  double *prop_ud_point   = new double[XYZTnodeSites * 3*4*3*4 *2];
+  double *prop_s_point    = new double[XYZTnodeSites * 3*4*3*4 *2];
+
   double *prop_ud_wall   = new double[XYZTnodeSites * 3*4*3*4 *2];
   double *prop_s_wall    = new double[XYZTnodeSites * 3*4*3*4 *2];
 
@@ -436,6 +439,8 @@ int core(int argc,char** argv)
   //initialize source class and generate wall and noise sources :)
   class_sources *sources = new class_sources();
       
+  
+  sources->generate_point_source(11,1,8);
   sources->generate_wall_source();
   sources->generate_noise_source_vector(N_sources);
  
@@ -522,13 +527,17 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
     //for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=4;iT_src_pos<6;iT_src_pos++){
+    for(int iT_src_pos=4;iT_src_pos<5;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
- 
+/* 
 
      {
+      propagators_solve("POINT",
+                        fprop_ud, fprop_s, 
+                        prop_ud_point,  prop_s_point,  
+                        iT_src_pos, sources->get_point_ixyz());          
       propagators_solve("WALL",
                         fprop_ud, fprop_s, 
                         prop_ud_wall,  prop_s_wall,  
@@ -542,12 +551,16 @@ int core(int argc,char** argv)
 
       //initialize hadron class
    //   class_hadron Hadron(prop_ud,prop_s);
+      class_hadron Hadron_point(prop_ud_point,prop_s_point);
       class_hadron Hadron_wall(prop_ud_wall,prop_s_wall);
       class_hadron Hadron_noise(prop_ud_noise,prop_s_noise);
 
    //   Hadron.set_base_name(base);
-      Hadron_wall.set_base_name(base);
         char pr[50];
+      Hadron_point.set_base_name(base);
+        snprintf(pr,sizeof(pr),"p_");
+      Hadron_point.set_prefix_name(pr);
+      Hadron_wall.set_base_name(base);
         snprintf(pr,sizeof(pr),"w_");
       Hadron_wall.set_prefix_name(pr);
       Hadron_noise.set_base_name(base);
@@ -555,20 +568,81 @@ int core(int argc,char** argv)
       Hadron_noise.set_prefix_name(pr);
       
    //   Hadron.set_source_position(iT_src_pos);
+      Hadron_point.set_source_position(iT_src_pos);
       Hadron_wall.set_source_position(iT_src_pos);
       Hadron_noise.set_source_position(iT_src_pos);
 
       // run all green functions
    //   Hadron.run_all_GF();
+      Hadron_point.run_all_GF();
       Hadron_wall.run_all_GF();
       Hadron_noise.run_all_GF();
-
+*/
 
       // FFT test
+  MPI_Barrier(MPI_COMM_WORLD);
       
+  printf("FFT test\n");    
+
+  MPI_Barrier(MPI_COMM_WORLD);
+
       
-      
-      
+  sources->generate_point_source(11,4,7);
+//  sources->print();
+  
+
+  for(int i=0;i<2*XYZnodeSites;i++){
+  prop_ud[i]=sources->get_point_ixyz()[i];
+  }
+//  sources->generate_point_source(5,0,0);
+//  for(int i=0;i<2*XYZnodeSites;i++){
+//  prop_ud[i]+=sources->get_point_ixyz()[i];
+//  }
+ 
+  MPI_Barrier(MPI_COMM_WORLD);
+  if(Communicator::self()==5){
+    for(int i=0; i<XYZnodeSites;i++){
+      printf("MPI %2i ... i %4i   func=  %1.16e %1.16e I \n", 
+              Communicator::self(), i , prop_ud[2*(i)],prop_ud[2*(i)+1]
+             );
+    }
+    printf("\n");
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+ 
+  FFT3D(prop_ud, FFTW_FORWARD); 
+ 
+  MPI_Barrier(MPI_COMM_WORLD);
+  if(Communicator::self()==5){
+    for(int i=0; i<XYZnodeSites;i++){
+      printf("MPI %2i ... i %4i  ^func=  %1.16e %1.16e I \n", 
+              Communicator::self(), i , prop_ud[2*(i)],prop_ud[2*(i)+1]
+             );
+    }
+  printf("\n");
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  FFT3D(prop_ud, FFTW_BACKWARD); 
+  
+  for(int i=0;i<2*XYZnodeSites;i++){
+  prop_ud[i]/=XYZsites;
+  }
+
+  
+  MPI_Barrier(MPI_COMM_WORLD);
+  if(Communicator::self()==5){
+    for(int i=0; i<XYZnodeSites;i++){
+      printf("MPI %2i ... i %4i v^func=  %1.16e %1.16e I \n", 
+              Communicator::self(), i , 
+              prop_ud[2*(i)],prop_ud[2*(i)+1]
+             );
+    }
+  printf("\n");
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+  
+ 
       ///////////////////////////////////////////////////////////
 
 
@@ -873,6 +947,8 @@ int core(int argc,char** argv)
   delete[] prop_s;
   delete[] prop_ud;
 
+  delete[] prop_s_point;
+  delete[] prop_ud_point;
   delete[] prop_s_wall;
   delete[] prop_ud_wall;
   delete[] prop_s_noise;
@@ -974,7 +1050,7 @@ static void propagators_solve(string label,
             int idx = icolor + Nc * ispin;
 
             b = 0.0;
-            if (it_src/TnodeSites == Communicator::ipe(3)) {
+            if (it_src/TnodeSites == TnodeCoor) {
  
               int it_node = it_src % TnodeSites;
 

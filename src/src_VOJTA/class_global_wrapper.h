@@ -125,7 +125,14 @@ class class_global_wrapper{
   // other useful functions
   //
 
- 
+  inline int index_xyz(int x,int y, int z){
+    return x + XnodeSites*(y+YnodeSites *z);
+  }
+
+  inline int index_xyzt(int x,int y, int z, int t){
+    return x + XnodeSites*(y+YnodeSites *( z + ZnodeSites *t));
+  }
+  
   void create_directory(string path);
   string LocalTime();
 
