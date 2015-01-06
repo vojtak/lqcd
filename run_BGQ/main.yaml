@@ -2,7 +2,7 @@
 
 Main:
   ## lattice_size = [Lx, Ly, Lz, Lt]
-  lattice_size             : [16,16,16,32]
+  lattice_size             : [32,32,32,64]
   grid_size                : [2,4,4,8]
   number_of_thread         : 0
   log_filename             : stdout

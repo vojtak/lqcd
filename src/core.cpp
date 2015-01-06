@@ -449,8 +449,8 @@ int core(int argc,char** argv)
   // main loop w.r. to gauge configurations
   //---------------------------------------------------------------------
 
-  for(int iarg = 0; iarg <1; iarg++){
-//  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
+//  for(int iarg = 0; iarg <1; iarg++){
+  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
 
 
     string ifname(gfile_list[iarg]);
@@ -526,12 +526,12 @@ int core(int argc,char** argv)
     // loop w.r. to source positions
     //---------------------------------------------------------------------
 
-    //for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=4;iT_src_pos<5;iT_src_pos++){
+    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
+    //for(int iT_src_pos=4;iT_src_pos<5;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
-/* 
+ 
 
      {
       propagators_solve("POINT",
@@ -577,70 +577,8 @@ int core(int argc,char** argv)
       Hadron_point.run_all_GF();
       Hadron_wall.run_all_GF();
       Hadron_noise.run_all_GF();
-*/
 
-      // FFT test
-  MPI_Barrier(MPI_COMM_WORLD);
-      
-  printf("FFT test\n");    
 
-  MPI_Barrier(MPI_COMM_WORLD);
-
-      
-  sources->generate_point_source(11,4,7);
-//  sources->print();
-  
-
-  for(int i=0;i<2*XYZnodeSites;i++){
-  prop_ud[i]=sources->get_point_ixyz()[i];
-  }
-//  sources->generate_point_source(5,0,0);
-//  for(int i=0;i<2*XYZnodeSites;i++){
-//  prop_ud[i]+=sources->get_point_ixyz()[i];
-//  }
- 
-  MPI_Barrier(MPI_COMM_WORLD);
-  if(Communicator::self()==5){
-    for(int i=0; i<XYZnodeSites;i++){
-      printf("MPI %2i ... i %4i   func=  %1.16e %1.16e I \n", 
-              Communicator::self(), i , prop_ud[2*(i)],prop_ud[2*(i)+1]
-             );
-    }
-    printf("\n");
-  }
-  MPI_Barrier(MPI_COMM_WORLD);
- 
-  FFT3D(prop_ud, FFTW_FORWARD); 
- 
-  MPI_Barrier(MPI_COMM_WORLD);
-  if(Communicator::self()==5){
-    for(int i=0; i<XYZnodeSites;i++){
-      printf("MPI %2i ... i %4i  ^func=  %1.16e %1.16e I \n", 
-              Communicator::self(), i , prop_ud[2*(i)],prop_ud[2*(i)+1]
-             );
-    }
-  printf("\n");
-  }
-  MPI_Barrier(MPI_COMM_WORLD);
-
-  FFT3D(prop_ud, FFTW_BACKWARD); 
-  
-  for(int i=0;i<2*XYZnodeSites;i++){
-  prop_ud[i]/=XYZsites;
-  }
-
-  
-  MPI_Barrier(MPI_COMM_WORLD);
-  if(Communicator::self()==5){
-    for(int i=0; i<XYZnodeSites;i++){
-      printf("MPI %2i ... i %4i v^func=  %1.16e %1.16e I \n", 
-              Communicator::self(), i , 
-              prop_ud[2*(i)],prop_ud[2*(i)+1]
-             );
-    }
-  printf("\n");
-  }
-  MPI_Barrier(MPI_COMM_WORLD);
   
  
       ///////////////////////////////////////////////////////////
