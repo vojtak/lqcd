@@ -125,6 +125,7 @@ class class_global_wrapper{
   // other useful functions
   //
 
+
   inline int index_xyz(int x,int y, int z){
     return x + XnodeSites*(y+YnodeSites *z);
   }

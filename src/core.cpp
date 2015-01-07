@@ -107,6 +107,7 @@ using Bridge::vout;
 #include "class_global_wrapper.h"
 #include "class_sources.h"
 #include "class_hadron.h"
+#include "class_two_hadrons.h"
 
 /* local from EXTERNAL */
 #include "fft3d.h"
@@ -557,7 +558,7 @@ int core(int argc,char** argv)
 
 
       // ========================================
-      //initialize hadron class and set all the parameters
+      //initialize single hadron class and set all the parameters
       char pr[50];
 
    //   class_hadron Hadron(prop_ud,prop_s);
@@ -594,6 +595,17 @@ int core(int argc,char** argv)
 
  
       ///////////////////////////////////////////////////////////
+
+
+      // ========================================
+      //initialize two-hadron class and set all the parameters
+      class_two_hadrons Two_hadrons_wall(prop_ud_wall,prop_s_wall);
+      Two_hadrons_wall.set_base_name(base);
+        snprintf(pr,sizeof(pr),"w_");
+      Two_hadrons_wall.set_prefix_name(pr);
+      Two_hadrons_wall.set_source_position(iT_src_pos);
+
+      Two_hadrons_wall.run_all_GF();
 
 
       //
@@ -894,15 +906,15 @@ int core(int argc,char** argv)
   // ####  tydy up  ####
   delete sources;
 
-  delete[] prop_s;
-  delete[] prop_ud;
+  //delete[] prop_s;
+  //delete[] prop_ud;
 
-  delete[] prop_s_point;
-  delete[] prop_ud_point;
+  //delete[] prop_s_point;
+  //delete[] prop_ud_point;
   delete[] prop_s_wall;
   delete[] prop_ud_wall;
-  delete[] prop_s_noise;
-  delete[] prop_ud_noise;
+  //delete[] prop_s_noise;
+  //delete[] prop_ud_noise;
 
   delete U_fixed;
   delete U;

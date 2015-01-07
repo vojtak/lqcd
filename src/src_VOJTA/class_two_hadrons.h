@@ -1,8 +1,8 @@
-#ifndef IS_INCLUDED_CLASS_HADRON_H
-#define IS_INCLUDED_CLASS_HADRON_H
+#ifndef IS_INCLUDED_CLASS_TWO_HADRONS_H
+#define IS_INCLUDED_CLASS_TWO_HADRONS_H
 
 
-class class_hadron : public class_global_wrapper {
+class class_two_hadrons : public class_global_wrapper {
 
   public:
   
@@ -10,7 +10,7 @@ class class_hadron : public class_global_wrapper {
   // constructor
   //
   
-  class_hadron(double *prop_ud_in, double *prop_s_in){
+  class_two_hadrons(double *prop_ud_in, double *prop_s_in){
     prop_ud=prop_ud_in;
     prop_s=prop_s_in;
   };
@@ -22,14 +22,10 @@ class class_hadron : public class_global_wrapper {
   
   void run_all_GF();
 
-  void run_GF(string hadron_name);
+  void run_GF(string hadrons_names);
 
   void run_GF_meson(double* correlator, double* prop_quark, double* prop_antiquark);
 
-  void run_GF_baryon_octet(double* correlator, double* prop_quark1, double* prop_quark2);
-  
-  void run_GF_baryon_octet_lambda(double* correlator, 
-                   double* prop_up, double* prop_down, double* prop_strange);
 
   private:
 
@@ -45,7 +41,7 @@ class class_hadron : public class_global_wrapper {
   // key functions
   //
 
-  void corr_print(double *correlator, string hadron_name);  
+  void corr_print(double *correlator, string hadrons_names);  
 
 
   // =======================================

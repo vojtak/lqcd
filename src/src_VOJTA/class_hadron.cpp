@@ -421,7 +421,7 @@ void class_hadron::corr_print(double *correlator, string hadron_name)
   if(MPI_rank==0){
 
     // create directory and file name
-    string dir="results/"+base+"/"+prefix+"correlators/";
+    string dir="results/"+base+"/"+prefix+"correlators_one_hadron/";
     //printf("%s %s\n",prefix.c_str(),dir.c_str());
     create_directory(dir);
   

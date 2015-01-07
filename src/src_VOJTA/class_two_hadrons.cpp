@@ -24,7 +24,7 @@ using namespace HAL_idx;
 
 void class_two_hadrons::run_all_GF(){
 
-  run_GF("Pion-Sigma");
+  run_GF("pion-sigma");
 
 }
 
@@ -41,7 +41,7 @@ void class_two_hadrons::run_GF(string hadrons_names){
          hadrons_names.c_str(), LocalTime().c_str());
   }
   
-  if(hadrons_names=="Pion-Sigma"){
+  if(hadrons_names=="pion-sigma"){
   
     run_GF_meson(correlator, prop_ud, prop_ud);
   }
@@ -70,6 +70,7 @@ void class_two_hadrons::run_GF_meson(double* correlator, double* prop_quark, dou
 #define back_prop(prop,c,a,cp,ap,ixyzt,it)                               \
         ( ZGM(a,5) * ZGM (IGM(ap,5),5) *                                 \
           Conj(prop[ prop_slv_idx(c,IGM(a,5),cp,IGM(ap,5) ,ixyz,it) ]) )
+
 
   double correlator_local[2*Tsites];
   memset(correlator_local,0,sizeof(correlator_local));
@@ -132,8 +133,7 @@ void class_two_hadrons::run_GF_meson(double* correlator, double* prop_quark, dou
     ((COMPLEX*)correlator)[it]=((COMPLEX*)correlator_global)[it];
   }
   
-  
-#undef back_prop
+#undef back_prop  
 }
 
 
@@ -151,7 +151,7 @@ void class_two_hadrons::corr_print(double *correlator, string hadrons_names)
   if(MPI_rank==0){
 
     // create directory and file name
-    string dir="results/"+base+"/"+prefix+"correlators/";
+    string dir="results/"+base+"/"+prefix+"correlators_two_hardons/";
     //printf("%s %s\n",prefix.c_str(),dir.c_str());
     create_directory(dir);
   
