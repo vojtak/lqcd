@@ -421,36 +421,40 @@ int core(int argc,char** argv)
     }
   }
 
-  double *prop_ud        = new double[XYZTnodeSites * 3*4*3*4 *2];
-  double *prop_s         = new double[XYZTnodeSites * 3*4*3*4 *2];
+  // ========================================
+  // initialize propagator arrays
 
-  double *prop_ud_point   = new double[XYZTnodeSites * 3*4*3*4 *2];
-  double *prop_s_point    = new double[XYZTnodeSites * 3*4*3*4 *2];
+  //double *prop_ud        = new double[XYZTnodeSites * 3*4*3*4 *2];
+  //double *prop_s         = new double[XYZTnodeSites * 3*4*3*4 *2];
+
+  //double *prop_ud_point   = new double[XYZTnodeSites * 3*4*3*4 *2];
+  //double *prop_s_point    = new double[XYZTnodeSites * 3*4*3*4 *2];
 
   double *prop_ud_wall   = new double[XYZTnodeSites * 3*4*3*4 *2];
   double *prop_s_wall    = new double[XYZTnodeSites * 3*4*3*4 *2];
 
-  double *prop_ud_noise  = new double[XYZTnodeSites * 3*4*3*4 *2];
-  double *prop_s_noise   = new double[XYZTnodeSites * 3*4*3*4 *2];
+  //double *prop_ud_noise  = new double[XYZTnodeSites * 3*4*3*4 *2];
+  //double *prop_s_noise   = new double[XYZTnodeSites * 3*4*3*4 *2];
 
 
-  int N_sources=1;
+  //int N_noises=1;
 
-  //initialize source class and generate wall and noise sources :)
+  // ========================================
+  //initialize source class and generate point, wall and noise sources :)
+
   class_sources *sources = new class_sources();
-      
-  
-  sources->generate_point_source(11,1,8);
+ 
+  //sources->generate_point_source(11,1,8);
   sources->generate_wall_source();
-  sources->generate_noise_source_vector(N_sources);
+  //sources->generate_noise_source_vector(N_sources);
  
 
   //---------------------------------------------------------------------
   // main loop w.r. to gauge configurations
   //---------------------------------------------------------------------
 
-  for(int iarg = 0; iarg <1; iarg++){
-//  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
+//  for(int iarg = 0; iarg <1; iarg++){
+  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
 
 
     string ifname(gfile_list[iarg]);
@@ -492,6 +496,7 @@ int core(int argc,char** argv)
       *U_fixed=*U;
     }
 
+    // ========================================
     //checking the plaquette  and Polyakov loop before and after gauge fixing
     {
       Staples        *staple     = new Staples;
@@ -509,6 +514,7 @@ int core(int argc,char** argv)
       delete pl;
     }
 
+    // ========================================
     // setting solver parameters...
  
         fopr_c_ud    -> set_parameters(*params_clover_ud);
@@ -526,122 +532,66 @@ int core(int argc,char** argv)
     // loop w.r. to source positions
     //---------------------------------------------------------------------
 
-    //for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
+//    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
     for(int iT_src_pos=4;iT_src_pos<5;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
-/* 
-
+ 
+      // ========================================
+      // solve propagators
      {
-      propagators_solve("POINT",
-                        fprop_ud, fprop_s, 
-                        prop_ud_point,  prop_s_point,  
-                        iT_src_pos, sources->get_point_ixyz());          
+      //propagators_solve("POINT",
+        //                fprop_ud, fprop_s, 
+          //              prop_ud_point,  prop_s_point,  
+            //            iT_src_pos, sources->get_point_ixyz());          
       propagators_solve("WALL",
                         fprop_ud, fprop_s, 
                         prop_ud_wall,  prop_s_wall,  
                         iT_src_pos, sources->get_wall_ixyz());          
-      propagators_solve("NOISE",
-                        fprop_ud, fprop_s, 
-                        prop_ud_noise, prop_s_noise, 
-                        iT_src_pos, sources->get_noise_ixyz(0));          
+      //propagators_solve("NOISE",
+        //                fprop_ud, fprop_s, 
+          //              prop_ud_noise, prop_s_noise, 
+            //            iT_src_pos, sources->get_noise_ixyz(0));          
      }
 
 
-      //initialize hadron class
-   //   class_hadron Hadron(prop_ud,prop_s);
-      class_hadron Hadron_point(prop_ud_point,prop_s_point);
-      class_hadron Hadron_wall(prop_ud_wall,prop_s_wall);
-      class_hadron Hadron_noise(prop_ud_noise,prop_s_noise);
+      // ========================================
+      //initialize hadron class and set all the parameters
+      char pr[50];
 
+   //   class_hadron Hadron(prop_ud,prop_s);
    //   Hadron.set_base_name(base);
-        char pr[50];
-      Hadron_point.set_base_name(base);
-        snprintf(pr,sizeof(pr),"p_");
-      Hadron_point.set_prefix_name(pr);
+   //   Hadron.set_source_position(iT_src_pos);
+
+
+   //   class_hadron Hadron_point(prop_ud_point,prop_s_point);
+   //   Hadron_point.set_base_name(base);
+   //     snprintf(pr,sizeof(pr),"p_");
+   //   Hadron_point.set_prefix_name(pr);
+   //   Hadron_point.set_source_position(iT_src_pos);
+
+      class_hadron Hadron_wall(prop_ud_wall,prop_s_wall);
       Hadron_wall.set_base_name(base);
         snprintf(pr,sizeof(pr),"w_");
       Hadron_wall.set_prefix_name(pr);
-      Hadron_noise.set_base_name(base);
-        snprintf(pr,sizeof(pr),"n_");
-      Hadron_noise.set_prefix_name(pr);
-      
-   //   Hadron.set_source_position(iT_src_pos);
-      Hadron_point.set_source_position(iT_src_pos);
       Hadron_wall.set_source_position(iT_src_pos);
-      Hadron_noise.set_source_position(iT_src_pos);
 
-      // run all green functions
+   //   class_hadron Hadron_noise(prop_ud_noise,prop_s_noise);
+   //   Hadron_noise.set_base_name(base);
+   //     snprintf(pr,sizeof(pr),"n_");
+   //   Hadron_noise.set_prefix_name(pr);
+   //   Hadron_noise.set_source_position(iT_src_pos);
+
+
+      // ========================================
+      // run all green functions for single hadron states
+
    //   Hadron.run_all_GF();
-      Hadron_point.run_all_GF();
+   //   Hadron_point.run_all_GF();
       Hadron_wall.run_all_GF();
-      Hadron_noise.run_all_GF();
-*/
+   //   Hadron_noise.run_all_GF();
 
-      // FFT test
-  MPI_Barrier(MPI_COMM_WORLD);
-      
-  printf("FFT test\n");    
-
-  MPI_Barrier(MPI_COMM_WORLD);
-
-      
-  sources->generate_point_source(11,4,7);
-//  sources->print();
-  
-
-  for(int i=0;i<2*XYZnodeSites;i++){
-  prop_ud[i]=sources->get_point_ixyz()[i];
-  }
-//  sources->generate_point_source(5,0,0);
-//  for(int i=0;i<2*XYZnodeSites;i++){
-//  prop_ud[i]+=sources->get_point_ixyz()[i];
-//  }
- 
-  MPI_Barrier(MPI_COMM_WORLD);
-  if(Communicator::self()==5){
-    for(int i=0; i<XYZnodeSites;i++){
-      printf("MPI %2i ... i %4i   func=  %1.16e %1.16e I \n", 
-              Communicator::self(), i , prop_ud[2*(i)],prop_ud[2*(i)+1]
-             );
-    }
-    printf("\n");
-  }
-  MPI_Barrier(MPI_COMM_WORLD);
- 
-  FFT3D(prop_ud, FFTW_FORWARD); 
- 
-  MPI_Barrier(MPI_COMM_WORLD);
-  if(Communicator::self()==5){
-    for(int i=0; i<XYZnodeSites;i++){
-      printf("MPI %2i ... i %4i  ^func=  %1.16e %1.16e I \n", 
-              Communicator::self(), i , prop_ud[2*(i)],prop_ud[2*(i)+1]
-             );
-    }
-  printf("\n");
-  }
-  MPI_Barrier(MPI_COMM_WORLD);
-
-  FFT3D(prop_ud, FFTW_BACKWARD); 
-  
-  for(int i=0;i<2*XYZnodeSites;i++){
-  prop_ud[i]/=XYZsites;
-  }
-
-  
-  MPI_Barrier(MPI_COMM_WORLD);
-  if(Communicator::self()==5){
-    for(int i=0; i<XYZnodeSites;i++){
-      printf("MPI %2i ... i %4i v^func=  %1.16e %1.16e I \n", 
-              Communicator::self(), i , 
-              prop_ud[2*(i)],prop_ud[2*(i)+1]
-             );
-    }
-  printf("\n");
-  }
-  MPI_Barrier(MPI_COMM_WORLD);
-  
  
       ///////////////////////////////////////////////////////////
 
