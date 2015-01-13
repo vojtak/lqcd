@@ -6,6 +6,6 @@ outputfile=${workingdir}/run.out
 errorfile=${workingdir}/run.err
 executable=${workingdir}/../build/V_LQCD.x
 #environment="OMP_NUM_THREADS=8:MUSPI_NUMINJFIFOS=10:MUSPI_NUMBATIDS=10"
-tasks_per_node=1
+tasks_per_node=4
 #mapfile=/bghome/scnfqcd/vojta/LQCD/X_VOJTA_code/run_BGQ/mapfile.qb32.4x4x4x4
 arguments=-quark_ud ud.yaml -quark_s s.yaml -f ./in.conf_list
