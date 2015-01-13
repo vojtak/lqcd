@@ -3,7 +3,7 @@
 Fopr_Clover:
   ## gamma_matrix_type = {Chiral,Dirac}
   gamma_matrix_type  : Dirac
-  hopping_parameter  : 0.113650
+  hopping_parameter  : 0.13650
   clover_coefficient : 1.53000
   boundary_condition : [1,1,1,1]
   ## verbose_level = {Crucial,General,Detailed,Paranoiac}
