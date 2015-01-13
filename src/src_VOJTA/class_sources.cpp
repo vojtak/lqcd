@@ -107,6 +107,7 @@ void class_sources :: generate_point_ixyz(double *point, int X_coor, int Y_coor,
 
   int X_coor_node, Y_coor_node, Z_coor_node;
 
+/* debuging
   MPI_Barrier(MPI_COMM_WORLD);
 
   printf("MPI %2i, xyztnode %2i,%2i,%2i,%2i .. coors %2i,%2i,%2i,  \n" ,
@@ -114,6 +115,7 @@ void class_sources :: generate_point_ixyz(double *point, int X_coor, int Y_coor,
           X_coor, Y_coor, Z_coor);
 
   MPI_Barrier(MPI_COMM_WORLD);
+*/
 
   if (X_coor/XnodeSites == XnodeCoor){
     if (Y_coor/YnodeSites == YnodeCoor){
