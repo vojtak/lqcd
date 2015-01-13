@@ -10,6 +10,8 @@
 *.out*
 *.err*
 
+*stdout*
+
 #binaries, configurations, and results
 
 build/*
