@@ -527,7 +527,7 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
     //for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=10;iT_src_pos<20;iT_src_pos++){
+    for(int iT_src_pos=10;iT_src_pos<13;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
