@@ -887,10 +887,10 @@ int core(int argc,char** argv)
 
 //  delete[] prop_s_point;
 //  delete[] prop_ud_point;
-//  delete[] prop_s_wall;
-//  delete[] prop_ud_wall;
-  delete[] prop_s_noise;
-  delete[] prop_ud_noise;
+  delete[] prop_s_wall;
+  delete[] prop_ud_wall;
+//  delete[] prop_s_noise;
+//  delete[] prop_ud_noise;
 
   delete U_fixed;
   delete U;
