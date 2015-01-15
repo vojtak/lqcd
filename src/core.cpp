@@ -511,13 +511,13 @@ int core(int argc,char** argv)
 
     // setting solver parameters...
  
-//        fopr_c_ud    -> set_parameters(*params_clover_ud);
-  //      fopr_c_ud    -> set_config    (U_fixed, U_fixed);
-    //    solver_ud    -> set_parameters(*params_solver_ud);
+        fopr_c_ud    -> set_parameters(*params_clover_ud);
+        fopr_c_ud    -> set_config    (U_fixed, U_fixed);
+        solver_ud    -> set_parameters(*params_solver_ud);
 
-//        fopr_c_s    -> set_parameters(*params_clover_s);
-  //      fopr_c_s    -> set_config    (U_fixed, U_fixed);
-    //    solver_s    -> set_parameters(*params_solver_s);  
+        fopr_c_s    -> set_parameters(*params_clover_s);
+        fopr_c_s    -> set_config    (U_fixed, U_fixed);
+        solver_s    -> set_parameters(*params_solver_s);  
 
 
 
@@ -532,16 +532,6 @@ int core(int argc,char** argv)
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
  
-
-    // setting solver parameters...
- 
-        fopr_c_ud    -> set_parameters(*params_clover_ud);
-        fopr_c_ud    -> set_config    (U_fixed, U_fixed);
-        solver_ud    -> set_parameters(*params_solver_ud);
-
-        fopr_c_s    -> set_parameters(*params_clover_s);
-        fopr_c_s    -> set_config    (U_fixed, U_fixed);
-        solver_s    -> set_parameters(*params_solver_s);  
 
      {
 //      propagators_solve("POINT",
