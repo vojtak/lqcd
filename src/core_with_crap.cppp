@@ -120,11 +120,6 @@ static void propagators_solve(string label,
                               double * prop, 
                               int it_src, double * source);
 
-static void iT_slice_selection(double *prop_final,
-                               double *prop_tmp,
-                               int noise_index,
-                               int iT_pos);
-
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
 
@@ -149,6 +144,15 @@ static int XYZnodeCoor;
 
 static const char* LocalTime();
 
+static void construct_iT_src_lst(std::vector<int> &iT_src_lst, 
+                                 std::vector<int> &Dirichlet_BC_lst,
+                                 int iT_src_num, int iT_src_shift);
+
+//------------Vojt
+extern void hal_run_V(int *Nodes, int *NodeSites, int *NodeCoor,
+                      double *prop_ud,  double *prop_s,
+                      std::vector<int> iT_src_lst, int iX_src, int iY_src, int iZ_src,
+                      std::string conf_name);
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -418,36 +422,33 @@ int core(int argc,char** argv)
     }
   }
 
-
-  // ========================================
-  // ++++++++++++++++++++++ VOJTA PART BEGINS
-
-  int N_noises=2;
-
-
   // ========================================
   // initialize propagator arrays
 
-  // global source propagator
+  //double *prop_ud        = new double[XYZTnodeSites * 3*4*3*4 *2];
+  //double *prop_s         = new double[XYZTnodeSites * 3*4*3*4 *2];
+
+  //double *prop_ud_point   = new double[XYZTnodeSites * 3*4*3*4 *2];
+  //double *prop_s_point    = new double[XYZTnodeSites * 3*4*3*4 *2];
+
   double *prop_ud_wall   = new double[XYZTnodeSites * 3*4*3*4 *2];
-  memset(prop_ud_wall,0,sizeof(prop_ud_wall));
-  
   double *prop_s_wall    = new double[XYZTnodeSites * 3*4*3*4 *2];
-  memset(prop_s_wall,0,sizeof(prop_s_wall));
 
-  // noise vector propagators
-  double *prop_ud_noise  = new double[N_noises * XYZTnodeSites * 3*4*3*4 *2];
-  memset(prop_ud_noise,0,sizeof(prop_ud_noise));
+  //double *prop_ud_noise  = new double[XYZTnodeSites * 3*4*3*4 *2];
+  //double *prop_s_noise   = new double[XYZTnodeSites * 3*4*3*4 *2];
 
 
+  //int N_noises=1;
 
   // ========================================
   //initialize source class and generate point, wall and noise sources :)
 
   class_sources *sources = new class_sources();
  
+  //sources->generate_point_source(11,1,8);
   sources->generate_wall_source();
-  sources->generate_noise_source_vector(N_noises);
+  //sources->generate_noise_source_vector(N_sources);
+ 
 
   //---------------------------------------------------------------------
   // main loop w.r. to gauge configurations
@@ -462,7 +463,7 @@ int core(int argc,char** argv)
 
  
     //---------------------------------------------------------------------
-    // ####  Set up a gauge configuration et al ####
+    // ####  Set up a gauge configuration  ####
     //---------------------------------------------------------------------
     {
       // not sure whether barrier is necessary, but just in case...
@@ -525,44 +526,6 @@ int core(int argc,char** argv)
         fopr_c_s    -> set_config    (U_fixed, U_fixed);
         solver_s    -> set_parameters(*params_solver_s);  
 
-    //---------------------------------------------------------------------
-    // ####  Gauge configuration et al set ####
-    //---------------------------------------------------------------------
-
-
-    // ========================================
-    // calculation of noise propagators 
-
-    int prop_volume = XYZTnodeSites * 3*4*3*4;
-    for(int i_noise=0; i_noise<N_noises; i_noise++){
-
-
-      // dummy propagator
-      double *prop_ud   = new double[prop_volume*2];
-
-      for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
-
-        vout.general("+++++++++++ NOISE num %2d, from time slice %2d\n",
-                  i_noise, iT_noise_src_pos);
-        
-        char label[256];
-        snprintf(label,sizeof(label), "NOISE num %2d, from time slice %2d",
-                 i_noise, iT_noise_src_pos);
-    
-        // solve the propagator
-        propagators_solve(label,
-                        fprop_ud, prop_ud,  
-                        iT_noise_src_pos, sources->get_noise_ixyz(i_noise));          
-        
-        
-        iT_slice_selection(prop_ud_noise,prop_ud, i_noise*prop_volume ,iT_noise_src_pos);  
-        MPI_Barrier(MPI_COMM_WORLD);  
-    
-      }  //iT_noise_src_pos
-          
-      delete[] prop_ud;
-    } //i_noise 
-
 
 
 
@@ -579,6 +542,10 @@ int core(int argc,char** argv)
       // ========================================
       // solve propagators
      {
+      //propagators_solve("POINT",
+        //                fprop_ud, fprop_s, 
+          //              prop_ud_point,  prop_s_point,  
+            //            iT_src_pos, sources->get_point_ixyz());          
       propagators_solve("WALL ud",
                         fprop_ud, 
                         prop_ud_wall,  
@@ -587,6 +554,10 @@ int core(int argc,char** argv)
                         fprop_s, 
                         prop_s_wall,  
                         iT_src_pos, sources->get_wall_ixyz());          
+      //propagators_solve("NOISE",
+        //                fprop_ud, fprop_s, 
+          //              prop_ud_noise, prop_s_noise, 
+            //            iT_src_pos, sources->get_noise_ixyz(0));          
      }
 
 
@@ -594,6 +565,16 @@ int core(int argc,char** argv)
       //initialize single hadron class and set all the parameters
       char pr[50];
 
+   //   class_hadron Hadron(prop_ud,prop_s);
+   //   Hadron.set_base_name(base);
+   //   Hadron.set_source_position(iT_src_pos);
+
+
+   //   class_hadron Hadron_point(prop_ud_point,prop_s_point);
+   //   Hadron_point.set_base_name(base);
+   //     snprintf(pr,sizeof(pr),"p_");
+   //   Hadron_point.set_prefix_name(pr);
+   //   Hadron_point.set_source_position(iT_src_pos);
 
       class_hadron Hadron_wall(prop_ud_wall,prop_s_wall);
       Hadron_wall.set_base_name(base);
@@ -601,11 +582,20 @@ int core(int argc,char** argv)
       Hadron_wall.set_prefix_name(pr);
       Hadron_wall.set_source_position(iT_src_pos);
 
+   //   class_hadron Hadron_noise(prop_ud_noise,prop_s_noise);
+   //   Hadron_noise.set_base_name(base);
+   //     snprintf(pr,sizeof(pr),"n_");
+   //   Hadron_noise.set_prefix_name(pr);
+   //   Hadron_noise.set_source_position(iT_src_pos);
+
 
       // ========================================
       // run all green functions for single hadron states
 
+   //   Hadron.run_all_GF();
+   //   Hadron_point.run_all_GF();
       Hadron_wall.run_all_GF();
+   //   Hadron_noise.run_all_GF();
 
  
       ///////////////////////////////////////////////////////////
@@ -620,21 +610,316 @@ int core(int argc,char** argv)
       Two_hadrons_wall.set_source_position(iT_src_pos);
 
       Two_hadrons_wall.run_all_GF();
+
+
+      //
+      
+      // class_NBS_WF NBS_WF(prop_ud, prop_s);
+      // NBS_WF.set_base_name(base);
+      // NBS_WF.set_source_position(it_src_pos);
+      // NBS_WF.set_noise_propagators(prop_noise);
+      //
+      // NBS_WF.calculate();
+
+   ///////////////////====================================================
+   // remnants of other codes
+   /*
+    string dir_base="results/"+base+"/";
+    //vout.general("dir = %s",dir_base);
+    if(Communicator::nodeid() == 0){
+      if(mkdir(dir_base.c_str(),0755)!=0){
+        if(errno != EEXIST){
+          vout.crucial("ERROR: cannot create a directory 'corr'\n");
+          abort();
+        }
+      }
+    }
+
+   
+      
+      // -- Vojta
+      // set the source position    
+      {
+        valarray<int> new_source(0,4);
+        //vout.general("\nnewsource %i %i %i %i",new_source[0], new_source[1], new_source[2], new_source[3]);
+        new_source[3]=iT_src_pos;
+
+        params_source_ud->set_int_vector("source_position",new_source);
+        params_source_s->set_int_vector("source_position",new_source);
+        valarray<int> source_position_ud = params_source_ud->get_int_vector("source_position");
+        vout.general("\n\nnew source position set:   %i %i %i %i\n\n",source_position_ud[0], source_position_ud[1], source_position_ud[2], source_position_ud[3]);
+      }
+
+      //////////// T. Doi ////////////
+      // setup the source and boundary condition information
+      std::vector<int> iT_src_lst;
+      std::vector<int> Dirichlet_BC_lst;
+      int iX_src, iY_src, iZ_src;
+      {
+        valarray<int> source_position_ud = params_source_ud->get_int_vector("source_position");
+        valarray<int> source_position_s  = params_source_s ->get_int_vector("source_position");
+        for(int mu = 0; mu < Ndim; mu++) {
+          if ( source_position_ud[mu] != source_position_s[mu] ) {
+            vout.crucial(vl, "up/down and strange have different centers.\n");
+            abort();
+          }
+        }
+
+        //  ishift[]: (t, x, y, z)-order
+        int ishift[] = { source_position_ud[3], source_position_ud[0], source_position_ud[1], source_position_ud[2] };
+   
+        iX_src = (ishift[1] + 100*Xsites) % Xsites;
+        iY_src = (ishift[2] + 100*Ysites) % Ysites;
+        iZ_src = (ishift[3] + 100*Zsites) % Zsites;
+   
+        construct_iT_src_lst( iT_src_lst, Dirichlet_BC_lst, 1, ishift[0] );
+      }
+
+      ////////////////////////////////
+      
+      //---------------------------------------------------------------------
+      // solvers begin 
+      //---------------------------------------------------------------------
+ 
+      typedef std::valarray<Field_F> PropagatorSet;
+
+
+      PropagatorSet sq_ud(Nc * Nd);
+      PropagatorSet sq_s(Nc * Nd);
+
+      // ud solver
+      {
+        vout.general("\n\t@@@ solver ud(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
+
+   //     fopr_c_ud    -> set_parameters(*params_clover_ud);
+     //   fopr_c_ud    -> set_config    (U_fixed, U_fixed);
+       //   solver_ud    -> set_parameters(*params_solver_ud);
+        source_ud    -> set_parameters(*params_source_ud);
+
+        for(int indx = 0; indx < Nc*Nd; indx++) sq_ud[indx] = 0.0;
+      
+        Field_F b;
+        b = 0.0;
+
+        int    Nconv;
+        double diff;
+      
+        vout.general(vl, "  color spin   Nconv      diff \n");
+        for (  int ispin  = 0; ispin  < Nd; ++ispin){
+          for (int icolor = 0; icolor < Nc; ++icolor) {
+            int idx = icolor + Nc * ispin;
+            source_ud->set(b, idx);
+	  
+            fprop_ud -> invert_D(sq_ud[idx], b, Nconv, diff); 
+
+            vout.general(vl, "   %2d   %2d   %6d   %12.4e\n",
+                         icolor, ispin, Nconv, diff);
+          }
+          vout.general(vl, "\n");
+        }
+        vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
+      }
+      // solver s
+      {
+        vout.general("\n\t@@@ solver s(start):\t%s,\tkappa=XXX, Csw=YYY\n", LocalTime());
+
+  //      fopr_c_s    -> set_parameters(*params_clover_s);
+    //    fopr_c_s    -> set_config    (U_fixed, U_fixed);
+      //  solver_s    -> set_parameters(*params_solver_s);
+        source_s    -> set_parameters(*params_source_s);
+ 
+        for(int indx = 0; indx < Nc*Nd; indx++) sq_s[indx] = 0.0;
+      
+        Field_F b;
+        b = 0.0;
+      
+        int    Nconv;
+        double diff;
+      
+        vout.general(vl, "  color spin   Nconv      diff\n");
+        for (  int ispin  = 0; ispin  < Nd; ++ispin) {
+          for (int icolor = 0; icolor < Nc; ++icolor) {
+            int idx = icolor + Nc * ispin;
+            source_s->set(b, idx);
+	  
+            fprop_s -> invert_D(sq_s[idx], b, Nconv, diff);
+          }
+          vout.general(vl, "\n");
+        }
+        vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
+      }
+
+
+      converter(sq_ud, prop_ud);
+      converter(sq_s, prop_s);
+
+
+      //---------------------------------------------------------------------
+      // solvers end
+      //---------------------------------------------------------------------
+
+      //---------------------------------------------------------------------
+      // measurement begin
+      //---------------------------------------------------------------------
+
+      
+      //-- two point correlators
+      //---------------------------------------------------------------------
+      vout.general(vl, "\n\t@@@ 2-point correlators(begin):  \t%s\n", LocalTime());
+
+      //set directory name
+      string dirname=dir_base+"corr/";
+      //if(Communicator::nodeid() == 0){
+        if(mkdir(dirname.c_str(),0755)!=0){
+          if(errno != EEXIST){
+            vout.crucial("ERROR: cannot create a directory 'corr'\n");
+            abort();
+          }
+        }
+      //}
+
+      Corr2pt_4spinor  corr(gmset_ud);
+
+      {
+        vout.general(vl, "correlator:  pion\n");
+        std::valarray<dcomplex> pion(CommonParameters::Lt());
+        corr.meson_corr(pion,
+                        gmset_ud->get_GM(gmset_ud->GAMMA5),
+                        gmset_ud->get_GM(gmset_ud->GAMMA5),
+                        sq_ud,
+                        sq_ud);
+	
+        //vout.general(vl, "create file name\n");
+
+        char wfile[FILENAME_MAX];
+        snprintf(wfile,	sizeof(wfile), "%spion%02d",
+                 dirname.c_str(),iT_src_pos);
+        if(Communicator::nodeid() == 0){
+          corr_print(pion, wfile, iT_src_pos);
+        }
+      }
+
+      {
+        vout.general(vl, "correlator:  kaon\n");
+        std::valarray<dcomplex> kaon(CommonParameters::Lt());
+        corr.meson_corr(kaon,
+                        gmset_ud->get_GM(gmset_ud->GAMMA5),
+                        gmset_ud->get_GM(gmset_ud->GAMMA5),
+                        sq_s,
+                        sq_ud);
+	
+        //vout.general(vl, "create file name\n");
+        char wfile[FILENAME_MAX];
+        snprintf(wfile,	sizeof(wfile), "%skaon%02d",
+                 dirname.c_str(),iT_src_pos);
+
+        if(Communicator::nodeid() == 0){
+          corr_print(kaon, wfile, iT_src_pos);
+        }
+      }
+
+      {
+        vout.general(vl, "correlator:  eta\n");
+        std::valarray<dcomplex> eta(CommonParameters::Lt());
+        corr.meson_corr(eta,
+                        gmset_ud->get_GM(gmset_ud->GAMMA5),
+                        gmset_ud->get_GM(gmset_ud->GAMMA5),
+                        sq_s,
+                        sq_s);
+	
+        //vout.general(vl, "create file name\n");
+        char wfile[FILENAME_MAX];
+        snprintf(wfile,	sizeof(wfile), "%seta%02d",
+                 dirname.c_str(),iT_src_pos);
+
+        if(Communicator::nodeid() == 0){
+          corr_print(eta, wfile, iT_src_pos);
+        }
+      }
+
+
+//      {
+//        vout.general(vl, "correlator:  proton\n");
+//        std::valarray<dcomplex> proton(CommonParameters::Lt());
+//        corr.proton_corr(proton,
+//                        gmset_ud->get_GM(gmset_ud->GAMMA5),  // DONT WORK PROPERLY
+//                        sq_ud,
+//                        sq_ud);
+//	
+//        //vout.general(vl, "create file name\n");
+//        char wfile[FILENAME_MAX];
+//        snprintf(wfile,	sizeof(wfile), "%sproton%02d",
+//                 dirname.c_str(),iT_src_pos);
+//
+//        if(Communicator::nodeid() == 0){
+//          corr_print(proton, wfile, iT_src_pos);
+//        }
+//      }
+
+
+      vout.general(vl, "\n\t@@@ 2-point correlators(end):  \t%s\n", LocalTime());
+      
+
+
+      //-- HAL code
+      //---------------------------------------------------------------------
+      //////////// T. Doi ////////////  HAL RUN PART
+      vout.general(vl, "\n\t@@@ HAL_RUN part(begin):  \t%s\n", LocalTime());
+      {
+        // not sure whether barrier is necessary, but just in case...
+        //BGNET_GlobalBarrier();
+        //BGNET_SwitchMPI();
+        //MPI_Barrier(MPI_COMM_WORLD);
+
+        int Nodes    [] = { Xnodes,     Ynodes,     Znodes,     Tnodes     };
+        int NodeSites[] = { XnodeSites, YnodeSites, ZnodeSites, TnodeSites };
+        int NodeCoor [] = { XnodeCoor,  YnodeCoor,  ZnodeCoor,  TnodeCoor  };
+
+     
+        //hal_run(Nodes, NodeSites, NodeCoor,
+        //        prop_ud,  prop_s,
+        //        smear_ud, smear_s,
+        //        iT_i_BS, iT_f_BS, flg_iT_BS_rev,
+        //        iT_src_lst, iX_src, iY_src, iZ_src,
+        //        base);
+
+        hal_run_V(Nodes, NodeSites, NodeCoor,
+                  prop_ud,  prop_s,
+                  iT_src_lst, iX_src, iY_src, iZ_src,
+                  base);
+
+        //MPI_Barrier(MPI_COMM_WORLD);
+        //BGNET_SwitchMPI();
+        //BGNET_GlobalBarrier();
+        vout.general(vl, "\n\t@@@ HAL_RUN part(end):  \t%s\n", LocalTime());
+      }
+      ////////////////////////////////
+      //---------------------------------------------------------------------
+      // measurement end
+      //---------------------------------------------------------------------
+ 
+   */
+   ///////////////////====================================================
+   // remnants of other codes END
+
    
 
     } // iT_src_pos - loop over source positions
   } // iarg - loop over configurations
 
   // ####  tydy up  ####
-  // VOJTA
   delete sources;
 
+  //delete[] prop_s;
+  //delete[] prop_ud;
+
+  //delete[] prop_s_point;
+  //delete[] prop_ud_point;
   delete[] prop_s_wall;
   delete[] prop_ud_wall;
+  //delete[] prop_s_noise;
+  //delete[] prop_ud_noise;
 
-  delete[] prop_ud_noise;
-
-  // from template
   delete U_fixed;
   delete U;
 
@@ -696,7 +981,7 @@ static void converter(std::valarray<Field_F>& sq, double prop[])
 
 //---------------------------------------------------------------------
 /**
- calculating propagators from a given source
+ calculating ud and s propagators from a given source
  */
 //---------------------------------------------------------------------
 
@@ -712,7 +997,7 @@ static void propagators_solve(string label,
       PropagatorSet sq(Nc * Nd);
 
       {
-        vout.general("\n\t@@@ %s solver (start):\t%s\n", label.c_str(),LocalTime());
+        vout.general("\n\t@@@ with %s solver (start):\t%s,\tkappa=XXX, Csw=YYY\n", label.c_str(),LocalTime());
 
         for(int indx = 0; indx < Nc*Nd; indx++){
           sq[indx]  = 0.0;
@@ -751,7 +1036,7 @@ static void propagators_solve(string label,
           }
           vout.general("\n");
         }
-        vout.general("\n\t@@@ solver(end):  \t%s\n\n", LocalTime());
+        vout.general("\n\t@@@ solver(end):  \t%s,\titer/max_iter=XXX/YYY\n\n", LocalTime());
       }
       //---------------------------------------------------------------------
       // solvers end
@@ -760,54 +1045,6 @@ static void propagators_solve(string label,
   converter(sq, prop);
 
 }      
-
-
-static void iT_slice_selection(double *prop_final,
-                               double *prop_tmp,
-                               int noise_index, int iT_pos){
-
-  vout.general("time slice selection at time %2d and index %d\n",
-                iT_pos, noise_index);
-
-  int iT_noise_pos=(iT_pos+100*Tsites) % Tsites;
-
-  if (iT_noise_pos/TnodeSites == TnodeCoor) {
-
-    int iT_node = iT_noise_pos % TnodeSites;
-
-    printf("MPI %2i, xyztnode %2i,%2i,%2i,%2i .. time coords  %2i,%2i,  \n" ,
-          Communicator::self(),XnodeCoor,YnodeCoor,ZnodeCoor,TnodeCoor,
-          iT_noise_pos, iT_node);
-
-
-    #define Dirac(     alpha, x)  (alpha +  4*(x))
-    #define Color(     c,     x)  (c     +  3*(x))
-
-    for(        int d     = 0; d    < 4; d++){
-      for(      int c     = 0; c    < 3; c++){
-        for(    int dP    = 0; dP   < 4; dP++){
-          for(  int cP    = 0; cP   < 3; cP++){
-            for(int ixyz  = 0; ixyz < XYZnodeSites; ixyz++){
- 
-              ((COMPLEX*)prop_final)[noise_index +
-                                     Color(c, Dirac(d, 
-                                           Color(cP, Dirac(dP, 
-                                                 ixyz + XYZnodeSites * (iT_node)))))]
-              = ((COMPLEX*)prop_tmp)[Color(c, Dirac(d, 
-                                           Color(cP, Dirac(dP, 
-                                                 ixyz + XYZnodeSites * (iT_node)))))];
-          
-            }
-          }
-        }
-      }
-    }
-
-    #undef Dirac  
-    #undef Color          
-  }
-                       
-}
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -827,5 +1064,43 @@ static const char* LocalTime()
 }
 
 
+
+///////////////////====================================================
+// remnants of other codes END
+   
+
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+
+static void construct_iT_src_lst(std::vector<int> &iT_src_lst,
+                                 std::vector<int> &Dirichlet_BC_lst, 
+                                 int iT_src_num, int iT_src_shift)
+{
+  if ( Tsites % iT_src_num != 0 ){
+    fprintf(stderr, "Tsites %% iT_src_num = %d %% %d != 0\n", Tsites, iT_src_num);
+    exit(1);
+  }
+
+  int iT_src_sep = Tsites / iT_src_num;
+
+  int iT_src, iT_dbc;
+  for(int i = 0; i < iT_src_num; i++){
+    iT_src = (i * iT_src_sep + iT_src_shift + 100*Tsites) % Tsites;
+
+    iT_src_lst.push_back(iT_src);
+
+    if ( iT_src_sep % 2 == 0 ){
+      iT_dbc = (iT_src + iT_src_sep / 2 -1 + 100*Tsites) % Tsites;
+      Dirichlet_BC_lst.push_back(iT_dbc);
+
+      iT_dbc = (iT_src + iT_src_sep / 2    + 100*Tsites) % Tsites;
+      Dirichlet_BC_lst.push_back(iT_dbc);
+    }
+    else {
+      iT_dbc = (iT_src + iT_src_sep / 2    + 100*Tsites) % Tsites;
+      Dirichlet_BC_lst.push_back(iT_dbc);
+    }
+  }
+}
 
 
