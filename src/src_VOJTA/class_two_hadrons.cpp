@@ -43,7 +43,7 @@ void class_two_hadrons::run_GF(string hadrons_names){
   
   if(hadrons_names=="pion-sigma"){
   
-    run_GF_meson(correlator, prop_ud, prop_ud);
+    run_GF_pi_sigmaI0(correlator, prop_ud, prop_s);
   }
 
   else{
@@ -57,15 +57,14 @@ void class_two_hadrons::run_GF(string hadrons_names){
 };
 
 // ================================================================================================
-// calculate pseudoscalar meson propagator < O OBAR >
-// O     =  antiquarkBAR  \gamma5  quark
-// OBAR  =  quarkBAR      \gamma5  antiquark
+// calculate pi-sigma propagator for I=0 
+//       formulas in notes 
 //
-void class_two_hadrons::run_GF_meson(double* correlator, double* prop_quark, double* prop_antiquark){
+void class_two_hadrons::run_GF_pi_sigmaI0(double* correlator, double* prop_ud_in, double* prop_s_in){
 
   // complexify propagators
-  COMPLEX* Prop_quark     = (COMPLEX*)prop_quark     ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
-  COMPLEX* Prop_antiquark = (COMPLEX*)prop_antiquark ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
+  COMPLEX* Prop_ud        = (COMPLEX*)prop_ud_in     ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
+  COMPLEX* Prop_s         = (COMPLEX*)prop_s_in      ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
 
 #define back_prop(prop,c,a,cp,ap,ixyzt,it)                               \
         ( ZGM(a,5) * ZGM (IGM(ap,5),5) *                                 \
@@ -101,8 +100,8 @@ void class_two_hadrons::run_GF_meson(double* correlator, double* prop_quark, dou
               int alpha2=IGM(alpha1,5);
 
               sum_snk +=  ZGM(alpha1,5) 
-                       *            Prop_quark     [prop_slv_idx(c1,alpha2, c1P,alpha1P,ixyz,it)  ]
-                       *  back_prop(Prop_antiquark,              c1,alpha1, c1P,alpha2P,ixyz,it)  ;             
+                       *            Prop_ud     [prop_slv_idx(c1,alpha2, c1P,alpha1P,ixyz,it)  ]
+                       *  back_prop(Prop_s,                   c1,alpha1, c1P,alpha2P,ixyz,it)  ;             
 
             }
           } // sink

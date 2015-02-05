@@ -24,7 +24,7 @@ class class_two_hadrons : public class_global_wrapper {
 
   void run_GF(string hadrons_names);
 
-  void run_GF_meson(double* correlator, double* prop_quark, double* prop_antiquark);
+  void run_GF_pi_sigmaI0(double* correlator, double* prop_ud_in, double* prop_s_in);
 
 
   private:

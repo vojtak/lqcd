@@ -116,8 +116,8 @@ using Bridge::vout;
 
 
 static void propagators_solve(string label,
-                              Fprop* fprop_ud, Fprop* fprop_s, 
-                              double * prop_ud, double * prop_s, 
+                              Fprop* fprop, 
+                              double * prop, 
                               int it_src, double * source);
 
 //---------------------------------------------------------------------
@@ -546,9 +546,13 @@ int core(int argc,char** argv)
         //                fprop_ud, fprop_s, 
           //              prop_ud_point,  prop_s_point,  
             //            iT_src_pos, sources->get_point_ixyz());          
-      propagators_solve("WALL",
-                        fprop_ud, fprop_s, 
-                        prop_ud_wall,  prop_s_wall,  
+      propagators_solve("WALL ud",
+                        fprop_ud, 
+                        prop_ud_wall,  
+                        iT_src_pos, sources->get_wall_ixyz());          
+      propagators_solve("WALL s",
+                        fprop_s, 
+                        prop_s_wall,  
                         iT_src_pos, sources->get_wall_ixyz());          
       //propagators_solve("NOISE",
         //                fprop_ud, fprop_s, 
@@ -982,23 +986,21 @@ static void converter(std::valarray<Field_F>& sq, double prop[])
 //---------------------------------------------------------------------
 
 static void propagators_solve(string label,
-                              Fprop* fprop_ud, Fprop* fprop_s, 
-                              double * prop_ud, double * prop_s, 
+                              Fprop* fprop, 
+                              double * prop, 
                               int it_src, double * source){
 
       int iT_source=(it_src+100*Tsites) % Tsites;
 
       typedef std::valarray<Field_F> PropagatorSet;
 
-      PropagatorSet sq_ud(Nc * Nd);
-      PropagatorSet sq_s(Nc * Nd);
+      PropagatorSet sq(Nc * Nd);
 
       {
-        vout.general("\n\t@@@ with %s solver ud and s(start):\t%s,\tkappa=XXX, Csw=YYY\n", label.c_str(),LocalTime());
+        vout.general("\n\t@@@ with %s solver (start):\t%s,\tkappa=XXX, Csw=YYY\n", label.c_str(),LocalTime());
 
         for(int indx = 0; indx < Nc*Nd; indx++){
-          sq_ud[indx] = 0.0;
-          sq_s[indx]  = 0.0;
+          sq[indx]  = 0.0;
         } 
       
         Field_F b;
@@ -1025,15 +1027,11 @@ static void propagators_solve(string label,
               }
             }
           
-            vout.general("\n\t+++ ud solver  color %d spin %d\n\n",icolor, ispin);
-            fprop_ud -> invert_D(sq_ud[idx], b, Nconv, diff); 
+            vout.general("\n\t+++ solver  color %d spin %d\n\n",icolor, ispin);
+            fprop -> invert_D(sq[idx], b, Nconv, diff); 
             vout.general("   %2d   %2d   %6d   %12.4e\n",
                            icolor, ispin, Nconv, diff);
 
-            vout.general("\n\t+++ s  solver  color %d spin %d\n\n",icolor, ispin);
-            fprop_s  -> invert_D(sq_s[idx],  b, Nconv, diff); 
-            vout.general("   %2d   %2d   %6d   %12.4e\n",
-                           icolor, ispin, Nconv, diff);
 
           }
           vout.general("\n");
@@ -1044,9 +1042,7 @@ static void propagators_solve(string label,
       // solvers end
       //---------------------------------------------------------------------
 
-  converter(sq_ud, prop_ud);
-  converter(sq_s,  prop_s );
-
+  converter(sq, prop);
 
 }      
 
