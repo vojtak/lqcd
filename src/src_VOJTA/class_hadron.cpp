@@ -45,9 +45,10 @@ void class_hadron::run_GF(string hadron_name){
   memset(correlator,0,sizeof(correlator));
 
   if(MPI_rank==0){
-    printf("  +++ run_GF : calculate %s propagator        %s\n",
+    printf(" ++++++ run_GF : calculate %s propagator        %s\n",
          hadron_name.c_str(), LocalTime().c_str());
   }
+  MPI_Barrier(MPI_COMM_WORLD);
   
   if(hadron_name=="pion"){
   
@@ -431,7 +432,9 @@ void class_hadron::corr_print(double *correlator, string hadron_name)
              hadron_name.c_str(),
              iT_src);
 
- 
+    printf(" ++++++ print %s propagator to file %s        %s\n",
+           hadron_name.c_str(), wfile, LocalTime().c_str());
+
     // open output file
     string ofname(wfile);
     std::ofstream fout(ofname.c_str());

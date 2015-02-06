@@ -1,6 +1,8 @@
 #ifndef IS_INCLUDED_CLASS_TWO_HADRONS_H
 #define IS_INCLUDED_CLASS_TWO_HADRONS_H
 
+/* local from VOJTA */
+#include "class_sources.h"
 
 class class_two_hadrons : public class_global_wrapper {
 
@@ -10,9 +12,14 @@ class class_two_hadrons : public class_global_wrapper {
   // constructor
   //
   
-  class_two_hadrons(double *prop_ud_in, double *prop_s_in){
+  class_two_hadrons(double *prop_ud_in,
+                    double *prop_s_in,
+                    double *prop_ud_noise_in,
+                    class_sources *sources_in){
     prop_ud=prop_ud_in;
     prop_s=prop_s_in;
+    prop_ud_noise=prop_ud_noise_in;
+    sources=sources_in;
   };
 
 
@@ -22,7 +29,7 @@ class class_two_hadrons : public class_global_wrapper {
   
   void run_all_GF();
 
-  void run_GF(string hadrons_names);
+  void run_GF(string hadron_names);
 
   void run_GF_pi_sigmaI0(double* correlator, double* prop_ud_in, double* prop_s_in);
 
@@ -36,12 +43,15 @@ class class_two_hadrons : public class_global_wrapper {
   double *prop_ud; 	// ud propagator
   double *prop_s;  	//  s propagator
 
+  double *prop_ud_noise; 	// ud noise propagator vector
+  class_sources *sources;		// noise source vector
+
 
   // =======================================
   // key functions
   //
 
-  void corr_print(double *correlator, string hadrons_names);  
+  void corr_print(double *correlator, string hadron_names);  
 
 
   // =======================================

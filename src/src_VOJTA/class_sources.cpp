@@ -39,6 +39,11 @@ void class_sources :: run(){
 
 void class_sources :: generate_point_source(int X_coor, int Y_coor, int Z_coor){
 
+   if(MPI_rank==0){
+     printf("\n ++++++ generating point source at x = %2d, y = %2d, z = %2d\n",X_coor, Y_coor, Z_coor);
+   }
+   MPI_Barrier(MPI_COMM_WORLD);
+   
    // allocate memory for the sources
    point_source = new double[2 * XYZnodeSites];
    memset(point_source,0,sizeof(point_source));
@@ -50,6 +55,11 @@ void class_sources :: generate_point_source(int X_coor, int Y_coor, int Z_coor){
 
 void class_sources :: generate_wall_source(){
 
+   if(MPI_rank==0){
+     printf("\n ++++++ generating wall source\n");
+   }
+   MPI_Barrier(MPI_COMM_WORLD);
+   
    // allocate memory for the sources
    wall_source = new double[2 * XYZnodeSites];
    memset(wall_source,0,sizeof(wall_source));
@@ -68,6 +78,11 @@ void class_sources :: generate_noise_source_vector(int N_noises_in){
    memset(noise_sources_vector,0,sizeof(noise_sources_vector));
 
    for(int n=0; n<N_noises;n++){
+
+     if(MPI_rank==0){
+       printf("\n ++++++ generating noise source # %2d\n",n);
+     }
+     MPI_Barrier(MPI_COMM_WORLD);
    
      generate_noise_ixyz ( noise_sources_vector+2*n*XYZnodeSites );
    
@@ -151,14 +166,52 @@ void class_sources :: generate_wall_ixyz(double* wall){
 
 
 void class_sources :: generate_noise_ixyz(double* noise){
-   
-  for(int i=0;i<XYZnodeSites;i++){
-
-    double rand_num=2*PI*RanGen.Random();
-    noise[2*i]=cos(rand_num);
-    noise[2*i+1]= sin(rand_num);
   
+  if(TnodeCoor==0){ 
+    for(int i=0;i<XYZnodeSites;i++){
+
+      double rand_num=2*PI*RanGen.Random();
+      noise[2*i]=cos(rand_num);
+      noise[2*i+1]= sin(rand_num);
+    }
   }
+
+
+  for(int n_x=0; n_x<Xnodes;n_x++){
+    for(int n_y=0; n_y<Ynodes;n_y++){
+      for(int n_z=0; n_z<Znodes;n_z++){
+
+        for(int n_t=1;n_t<Tnodes;n_t++){
+          
+          int rank_from;
+          int coor_from[4]={n_x,n_y,n_z,0};
+          Communicator::grid_rank(&rank_from,coor_from);
+          int rank_to;
+          int coor_to[4]={n_x,n_y,n_z,n_t};
+          Communicator::grid_rank(&rank_to,coor_to);
+
+          if(MPI_rank==rank_from){
+            MPI_Send(noise,
+                     2*XYZnodeSites,MPI_DOUBLE,
+                     rank_to,1*n_t+100*n_z+10000*n_y+1000000*n_x,
+                     MPI_COMM_WORLD);
+          }
+          
+          MPI_Status *status;
+          if(MPI_rank==rank_to){
+            MPI_Recv(noise,
+                     2*XYZnodeSites,MPI_DOUBLE,
+                     rank_from,1*n_t+100*n_z+10000*n_y+1000000*n_x,
+                     MPI_COMM_WORLD,status);
+          }
+          
+
+        }
+  
+      }  
+    }  
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
 
 }
 

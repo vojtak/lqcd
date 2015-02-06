@@ -122,7 +122,7 @@ static void propagators_solve(string label,
 
 static void iT_slice_selection(double *prop_final,
                                double *prop_tmp,
-                               int noise_index,
+                               int noise_i,
                                int iT_pos);
 
 //---------------------------------------------------------------------
@@ -542,7 +542,7 @@ int core(int argc,char** argv)
 
       for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
 
-        vout.general("+++++++++++ NOISE num %2d, from time slice %2d\n",
+        vout.general("\n\n ++++++ NOISE num %2d, from time slice %2d\n",
                   i_noise, iT_noise_src_pos);
         
         char label[256];
@@ -555,7 +555,7 @@ int core(int argc,char** argv)
                         iT_noise_src_pos, sources->get_noise_ixyz(i_noise));          
         
         
-        iT_slice_selection(prop_ud_noise,prop_ud, i_noise*prop_volume ,iT_noise_src_pos);  
+        iT_slice_selection(prop_ud_noise,prop_ud, i_noise ,iT_noise_src_pos);  
         MPI_Barrier(MPI_COMM_WORLD);  
     
       }  //iT_noise_src_pos
@@ -613,13 +613,18 @@ int core(int argc,char** argv)
 
       // ========================================
       //initialize two-hadron class and set all the parameters
-      class_two_hadrons Two_hadrons_wall(prop_ud_wall,prop_s_wall);
-      Two_hadrons_wall.set_base_name(base);
-        snprintf(pr,sizeof(pr),"w_");
-      Two_hadrons_wall.set_prefix_name(pr);
-      Two_hadrons_wall.set_source_position(iT_src_pos);
+      class_two_hadrons Two_hadrons(prop_ud_wall,prop_s_wall, prop_ud_noise,sources);
 
-      Two_hadrons_wall.run_all_GF();
+      Two_hadrons.set_base_name(base);
+        snprintf(pr,sizeof(pr),"w_");
+      Two_hadrons.set_prefix_name(pr);
+      Two_hadrons.set_source_position(iT_src_pos);
+
+
+      // ========================================
+      // run all green functions for two-hadron states
+
+      Two_hadrons.run_all_GF();
    
 
     } // iT_src_pos - loop over source positions
@@ -742,7 +747,7 @@ static void propagators_solve(string label,
               }
             }
           
-            vout.general("\n\t+++ solver  color %d spin %d\n\n",icolor, ispin);
+            vout.general("\n\t +++ solver  color %d spin %d\n\n",icolor, ispin);
             fprop -> invert_D(sq[idx], b, Nconv, diff); 
             vout.general("   %2d   %2d   %6d   %12.4e\n",
                            icolor, ispin, Nconv, diff);
@@ -764,10 +769,10 @@ static void propagators_solve(string label,
 
 static void iT_slice_selection(double *prop_final,
                                double *prop_tmp,
-                               int noise_index, int iT_pos){
+                               int noise_i, int iT_pos){
 
-  vout.general("time slice selection at time %2d and index %d\n",
-                iT_pos, noise_index);
+  vout.general("\n ++++++ time slice selection at time %2d and index %d, \t%s\n",
+                iT_pos, noise_i, LocalTime());
 
   int iT_noise_pos=(iT_pos+100*Tsites) % Tsites;
 
@@ -775,10 +780,11 @@ static void iT_slice_selection(double *prop_final,
 
     int iT_node = iT_noise_pos % TnodeSites;
 
-    printf("MPI %2i, xyztnode %2i,%2i,%2i,%2i .. time coords  %2i,%2i,  \n" ,
-          Communicator::self(),XnodeCoor,YnodeCoor,ZnodeCoor,TnodeCoor,
-          iT_noise_pos, iT_node);
+//    printf("MPI %2i, xyztnode %2i,%2i,%2i,%2i .. time coords  %2i,%2i,  \n" ,
+//          Communicator::self(),XnodeCoor,YnodeCoor,ZnodeCoor,TnodeCoor,
+//          iT_noise_pos, iT_node);
 
+    int noise_index=noise_i*XYZTnodeSites * 3*4*3*4;
 
     #define Dirac(     alpha, x)  (alpha +  4*(x))
     #define Color(     c,     x)  (c     +  3*(x))

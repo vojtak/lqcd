@@ -17,6 +17,7 @@
 
 /* local from VOJTA */
 #include "class_global_wrapper.h"
+#include "class_sources.h"
 #include "class_two_hadrons.h"
 
 
@@ -31,17 +32,18 @@ void class_two_hadrons::run_all_GF(){
 // ================================================================================================
 // wrapper to run all correlators
 //
-void class_two_hadrons::run_GF(string hadrons_names){
+void class_two_hadrons::run_GF(string hadron_names){
 
   double correlator[2*Tsites];
   memset(correlator,0,sizeof(correlator));
 
   if(MPI_rank==0){
-    printf("  +++ run_GF : calculate %s propagator        %s\n",
-         hadrons_names.c_str(), LocalTime().c_str());
+    printf(" +++++++ run_GF : calculate %s propagator        %s\n",
+         hadron_names.c_str(), LocalTime().c_str());
   }
-  
-  if(hadrons_names=="pion-sigma"){
+  MPI_Barrier(MPI_COMM_WORLD);
+    
+  if(hadron_names=="pion-sigma"){
   
     run_GF_pi_sigmaI0(correlator, prop_ud, prop_s);
   }
@@ -52,7 +54,7 @@ void class_two_hadrons::run_GF(string hadrons_names){
     abort();
   }
 
-  corr_print(correlator, hadrons_names);
+  corr_print(correlator, hadron_names);
   
 };
 
@@ -142,7 +144,7 @@ void class_two_hadrons::run_GF_pi_sigmaI0(double* correlator, double* prop_ud_in
 // ================================================================================================
 // print the correlator
 //
-void class_two_hadrons::corr_print(double *correlator, string hadrons_names)
+void class_two_hadrons::corr_print(double *correlator, string hadron_names)
 {
 
   MPI_Barrier(MPI_COMM_WORLD);
@@ -157,9 +159,11 @@ void class_two_hadrons::corr_print(double *correlator, string hadrons_names)
     char wfile[256];
     snprintf(wfile,sizeof(wfile), "%s%s.%02d",
              dir.c_str(),
-             hadrons_names.c_str(),
+             hadron_names.c_str(),
              iT_src);
 
+    printf(" ++++++ print %s propagator to file %s        %s\n",
+           hadron_names.c_str(), wfile, LocalTime().c_str());
  
     // open output file
     string ofname(wfile);
