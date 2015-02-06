@@ -83,6 +83,12 @@ class class_global_wrapper{
     iT_src = iT_src_in;
   };
 
+  // source position in time
+  int N_noises;		
+  void set_noise_number(int N_noises_in){
+    N_noises = N_noises_in;
+  };
+
 
   // =======================================
   // global parameters

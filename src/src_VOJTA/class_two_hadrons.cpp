@@ -38,40 +38,63 @@ void class_two_hadrons::run_GF(string hadron_names){
   memset(correlator,0,sizeof(correlator));
 
   if(MPI_rank==0){
-    printf(" +++++++ run_GF : calculate %s propagator        %s\n",
+    printf(" ++++++ run_GF : calculate %10s propagator        %s\n",
          hadron_names.c_str(), LocalTime().c_str());
   }
   MPI_Barrier(MPI_COMM_WORLD);
+
     
   if(hadron_names=="pion-sigma"){
-  
-    run_GF_pi_sigmaI0(correlator, prop_ud, prop_s);
-  }
 
+    if(MPI_rank==0){
+      printf(" ++++++ run_GF : calculate the tree part of %10s propagator        %s\n",
+           hadron_names.c_str(), LocalTime().c_str());
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    
+    double correlator_tree[2*Tsites];
+    memset(correlator_tree,0,sizeof(correlator_tree));  
+    run_GF_pi_sigma_tree(correlator_tree);
+    corr_print(correlator_tree, hadron_names+"_tree");
+
+    //if(MPI_rank==0){
+    //  printf(" +++++++ run_GF : calculate the loop part of %10s propagator        %s\n",
+    //       hadron_names.c_str(), LocalTime().c_str());
+    //}
+    //
+    //double correlator_loop[2*Tsites];
+    //memset(correlator_loop,0,sizeof(correlator_loop));  
+    //run_GF_pi_sigma_tree(correlator_tree);
+    //corr_print(correlator_loop, hadron_names+"_tree");
+    
+    //for(int i=0,i<2*Tsites;i++){
+    //  correlator[i]=correlator_tree[i]+correlator_loop[i];
+    //}
+  }
   else{
   
     printf("ERROR - unknown hadron name");
     abort();
   }
 
+
   corr_print(correlator, hadron_names);
   
 };
 
 // ================================================================================================
-// calculate pi-sigma propagator for I=0 
+// calculate pi-sigma propagator --- the tree part 
 //       formulas in notes 
 //
-void class_two_hadrons::run_GF_pi_sigmaI0(double* correlator, double* prop_ud_in, double* prop_s_in){
+void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
 
-  // complexify propagators
-  COMPLEX* Prop_ud        = (COMPLEX*)prop_ud_in     ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
-  COMPLEX* Prop_s         = (COMPLEX*)prop_s_in      ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
+  // complexify propagators 
+  COMPLEX* Prop_ud            = (COMPLEX*)prop_ud        ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
+  COMPLEX* Prop_s             = (COMPLEX*)prop_s         ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
 
-#define back_prop(prop,c,a,cp,ap,ixyzt,it)                               \
+#define back_prop(prop,c,a,cp,ap,ixyz,it)                               \
         ( ZGM(a,5) * ZGM (IGM(ap,5),5) *                                 \
           Conj(prop[ prop_slv_idx(c,IGM(a,5),cp,IGM(ap,5) ,ixyz,it) ]) )
-
 
   double correlator_local[2*Tsites];
   memset(correlator_local,0,sizeof(correlator_local));
@@ -83,45 +106,80 @@ void class_two_hadrons::run_GF_pi_sigmaI0(double* correlator, double* prop_ud_in
   #pragma omp parallel for
   for(int it = 0; it < TnodeSites; it++){
 
-    // ixyz summation
-    COMPLEX sum_ixyz = COMPLEX_ZERO;
-    for(int ixyz = 0; ixyz < XYZnodeSites; ixyz++){
+    // noise summation
+    COMPLEX sum_N = COMPLEX_ZERO;
+    for(int i_noise = 0; i_noise < N_noises; i_noise++){
+    
+      COMPLEX* Noise      = (COMPLEX*)sources->get_noise_ixyz(i_noise);
 
-      // source contraction
-      COMPLEX sum_src = COMPLEX_ZERO;
-      for(      int alpha1P = 0; alpha1P < 4; alpha1P++){
-        for(    int c1P     = 0; c1P     < 3; c1P++){
+
+      // free Dirac index summation
+      COMPLEX sum_freeDI = COMPLEX_ZERO;
+      for(int ALPHA = 0; ALPHA < 2; ALPHA++){
+
+        // source summation
+        COMPLEX sum_source = COMPLEX_ZERO;
+        for(int dP      = 0; dP     < 3; dP++){
+        for(int alphaP  = 0; alphaP < 4; alphaP++){
+          int betaP=IGM(alphaP,5);
+        for(int colorP  = 0; colorP < 6; colorP++){
+          int aP    =Eps(0,colorP);
+          int bP    =Eps(1,colorP);
+          int cP    =Eps(2,colorP);          
+        for(int gammaP  = 0; gammaP < 4; gammaP++){
+          int deltaP = icg5[gammaP]; 
+          
+          
+          
+          // sink summation
+          COMPLEX sum_sink = COMPLEX_ZERO;
+          for(int d       = 0; d      < 3; d ++){
+          for(int alpha   = 0; alpha  < 4; alpha++){
+            int beta=IGM(alpha,5);
+          for(int color   = 0; color  < 6; color++){
+            int a    =Eps(0,color);
+            int b    =Eps(1,color);
+            int c    =Eps(2,color);          
+          for(int gamma   = 0; gamma  < 4; gamma++){
+            int delta = icg5[gamma]; 
+
+            //sum Y_ixyz
+            COMPLEX sum_Y_ixyz = COMPLEX_ZERO;
+            for(int Y_ixyz = 0;  Y_ixyz < XYZnodeSites; Y_ixyz++){
             
-          int alpha2P=IGM(alpha1P,5);
+              sum_Y_ixyz += Noise[Y_ixyz];
+            }//Y_ixyz
+            
+            
+            //sum X_ixyz
+            //COMPLEX sum_X_ixyz = COMPLEX_ZERO;
+            //for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+            //
+            //  sum_X_ixyz+=
+            //}//X_ixyz
            
-          // sink contraction
-          COMPLEX sum_snk = COMPLEX_ZERO;
-          for(  int alpha1  = 0; alpha1  < 4; alpha1++){
-            for(int c1      = 0; c1      < 3; c1++){
-                
-              int alpha2=IGM(alpha1,5);
 
-              sum_snk +=  ZGM(alpha1,5) 
-                       *            Prop_ud     [prop_slv_idx(c1,alpha2, c1P,alpha1P,ixyz,it)  ]
-                       *  back_prop(Prop_s,                   c1,alpha1, c1P,alpha2P,ixyz,it)  ;             
+            sum_sink += sum_Y_ixyz/XYZnodeSites;
+                        //ZGM(alpha,5) * Eps(3,color) * zcg5[gamma]
+          }}}}//sink
 
-            }
-          } // sink
 
-          sum_src +=  sum_snk 
-                   *  ZGM(alpha1P,5);
- 
-        }
-      } // source
+          sum_source += sum_sink;
+                        //ZGM(alphaP,5) * Eps(3,colorP) * zcg5[gammaP] *
+                        
+        }}}}//source
+      
+        sum_freeDI += sum_source;
+      }//ALPHA
+    
+      sum_N += sum_freeDI;
+    }//noise_i
 
-      sum_ixyz += sum_src ;
-        
-    } // ixyz
 
 //    printf("MPI %i OMP %i ... it %i sum %1.16e %1.16e I\n", 
 //           MPI_rank,omp_get_thread_num(), it,Real(sum_ixyz),Imag(sum_ixyz));
  
-  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_ixyz;
+  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_N/(N_noises*2.0*12.0*24.0*12.0*24.0);
     
   } // it, end of omp parallel
 
@@ -138,6 +196,105 @@ void class_two_hadrons::run_GF_pi_sigmaI0(double* correlator, double* prop_ud_in
 }
 
 
+// ================================================================================================
+// calculate pi-sigma propagator --- the loop part 
+//       formulas in notes 
+//
+void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
+
+  // complexify propagators 
+  COMPLEX* Prop_ud            = (COMPLEX*)prop_ud        ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
+  COMPLEX* Prop_s             = (COMPLEX*)prop_s         ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
+  COMPLEX* Prop_ud_noise      = (COMPLEX*)prop_ud_noise  ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
+
+#define back_prop(prop,c,a,cp,ap,ixyz,it)                               \
+        ( ZGM(a,5) * ZGM (IGM(ap,5),5) *                                 \
+          Conj(prop[ prop_slv_idx(c,IGM(a,5),cp,IGM(ap,5) ,ixyz,it) ]) )
+
+
+  double correlator_local[2*Tsites];
+  memset(correlator_local,0,sizeof(correlator_local));
+  
+  double correlator_global[2*Tsites];
+  memset(correlator_global,0,sizeof(correlator_global));
+  
+  // correlator itself
+  #pragma omp parallel for
+  for(int it = 0; it < TnodeSites; it++){
+
+    // noise summation
+    COMPLEX sum_N = COMPLEX_ZERO;
+    for(int i_noise = 0; i_noise < N_noises; i_noise++){
+    
+      COMPLEX* Noise      = (COMPLEX*)sources->get_noise_ixyz(i_noise);
+
+
+      // free Dirac index summation
+      COMPLEX sum_freeDI = COMPLEX_ZERO;
+      for(int ALPHA = 0; ALPHA < 2; ALPHA++){
+
+        // source summation
+        COMPLEX sum_source = COMPLEX_ZERO;
+        for(int dP      = 0; dP     < 3; dP++){
+        for(int alphaP  = 0; alphaP < 4; alphaP++){
+        for(int colorP  = 0; colorP < 6; colorP++){
+        for(int gammaP  = 0; gammaP < 4; gammaP++){
+
+          // sink summation
+          COMPLEX sum_sink = COMPLEX_ZERO;
+          for(int d       = 0; d      < 3; d ++){
+          for(int alpha   = 0; alpha  < 4; alpha++){
+          for(int color   = 0; color  < 6; color++){
+          for(int gamma   = 0; gamma  < 4; gamma++){
+
+            //sum Y_ixyz
+            COMPLEX sum_Y_ixyz = COMPLEX_ZERO;
+            for(int Y_ixyz = 0;  Y_ixyz < XYZnodeSites; Y_ixyz++){
+            
+              sum_Y_ixyz += 1.0;
+            }//Y_ixyz
+            
+            
+            //sum X_ixyz
+            COMPLEX sum_X_ixyz = COMPLEX_ZERO;
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+            
+            //  sum_Y_ixyz+=
+            }//X_ixyz
+           
+
+            sum_sink += sum_Y_ixyz;
+          }}}}//sink
+
+
+          sum_source += sum_sink;
+        }}}}//source
+      
+        sum_freeDI += sum_source;
+      }//ALPHA
+    
+      sum_N += sum_freeDI;
+    }//noise_i
+
+
+//    printf("MPI %i OMP %i ... it %i sum %1.16e %1.16e I\n", 
+//           MPI_rank,omp_get_thread_num(), it,Real(sum_ixyz),Imag(sum_ixyz));
+ 
+  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_N;
+    
+  } // it, end of omp parallel
+
+  // reduce from all MPI processes
+  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Reduce(correlator_local, correlator_global, 2*Tsites, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  
+  // output correlator
+  for(int it = 0; it < Tsites; it++){
+    ((COMPLEX*)correlator)[it]=((COMPLEX*)correlator_global)[it];
+  }
+  
+#undef back_prop  
+}
 
 
 
@@ -162,7 +319,7 @@ void class_two_hadrons::corr_print(double *correlator, string hadron_names)
              hadron_names.c_str(),
              iT_src);
 
-    printf(" ++++++ print %s propagator to file %s        %s\n",
+    printf(" ++++++ corr_print : print %10s propagator to file %s\n        \t%s\n",
            hadron_names.c_str(), wfile, LocalTime().c_str());
  
     // open output file

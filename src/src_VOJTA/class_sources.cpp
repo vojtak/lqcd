@@ -87,6 +87,17 @@ void class_sources :: generate_noise_source_vector(int N_noises_in){
      generate_noise_ixyz ( noise_sources_vector+2*n*XYZnodeSites );
    
    }
+   double re_av=0.0;
+   double im_av=0.0;
+   for(int i=0;i< N_noises * XYZnodeSites;i++){
+     re_av+=noise_sources_vector[2*i];
+     im_av+=noise_sources_vector[2*i+1];
+   }
+
+   printf("\n MPI %2i, average = %1.16e + I %1.16e\n", 
+          MPI_rank, re_av/XYZnodeSites/N_noises, im_av/XYZnodeSites/N_noises);
+   MPI_Barrier(MPI_COMM_WORLD);
+   
 
 }
 

@@ -532,13 +532,13 @@ int core(int argc,char** argv)
 
     // ========================================
     // calculation of noise propagators 
-
+/*
     int prop_volume = XYZTnodeSites * 3*4*3*4;
     for(int i_noise=0; i_noise<N_noises; i_noise++){
 
-
       // dummy propagator
       double *prop_ud   = new double[prop_volume*2];
+
 
       for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
 
@@ -548,13 +548,14 @@ int core(int argc,char** argv)
         char label[256];
         snprintf(label,sizeof(label), "NOISE num %2d, from time slice %2d",
                  i_noise, iT_noise_src_pos);
+
     
         // solve the propagator
         propagators_solve(label,
                         fprop_ud, prop_ud,  
                         iT_noise_src_pos, sources->get_noise_ixyz(i_noise));          
         
-        
+        // selecto only iT=iT slice        
         iT_slice_selection(prop_ud_noise,prop_ud, i_noise ,iT_noise_src_pos);  
         MPI_Barrier(MPI_COMM_WORLD);  
     
@@ -562,7 +563,7 @@ int core(int argc,char** argv)
           
       delete[] prop_ud;
     } //i_noise 
-
+*/
 
 
 
@@ -589,27 +590,20 @@ int core(int argc,char** argv)
                         iT_src_pos, sources->get_wall_ixyz());          
      }
 
+      
+      // ========================================
+      // set prefix for this particular run
+      char pr[50];
+      snprintf(pr,sizeof(pr),"w_"); 
 
       // ========================================
       //initialize single hadron class and set all the parameters
-      char pr[50];
-
 
       class_hadron Hadron_wall(prop_ud_wall,prop_s_wall);
+      
       Hadron_wall.set_base_name(base);
-        snprintf(pr,sizeof(pr),"w_");
       Hadron_wall.set_prefix_name(pr);
       Hadron_wall.set_source_position(iT_src_pos);
-
-
-      // ========================================
-      // run all green functions for single hadron states
-
-      Hadron_wall.run_all_GF();
-
- 
-      ///////////////////////////////////////////////////////////
-
 
       // ========================================
       //initialize two-hadron class and set all the parameters
@@ -619,12 +613,17 @@ int core(int argc,char** argv)
         snprintf(pr,sizeof(pr),"w_");
       Two_hadrons.set_prefix_name(pr);
       Two_hadrons.set_source_position(iT_src_pos);
+      Two_hadrons.set_noise_number(N_noises);
 
 
       // ========================================
-      // run all green functions for two-hadron states
+      // run all green functions 
+
+      Hadron_wall.run_all_GF();
 
       Two_hadrons.run_all_GF();
+ 
+      ///////////////////////////////////////////////////////////
    
 
     } // iT_src_pos - loop over source positions
