@@ -14,11 +14,11 @@ class class_two_hadrons : public class_global_wrapper {
   
   class_two_hadrons(double *prop_ud_in,
                     double *prop_s_in,
-                    double *prop_ud_noise_in,
+                    double *prop_noise_in,
                     class_sources *sources_in){
     prop_ud=prop_ud_in;
     prop_s=prop_s_in;
-    prop_ud_noise=prop_ud_noise_in;
+    prop_noise=prop_noise_in;
     sources=sources_in;
   };
 
@@ -44,7 +44,7 @@ class class_two_hadrons : public class_global_wrapper {
   double *prop_ud; 	// ud propagator
   double *prop_s;  	//  s propagator
 
-  double *prop_ud_noise; 	// ud noise propagator vector
+  double *prop_noise; 	// ud noise propagator vector
   class_sources *sources;		// noise source vector
 
 

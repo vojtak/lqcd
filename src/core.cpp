@@ -422,7 +422,7 @@ int core(int argc,char** argv)
   // ========================================
   // ++++++++++++++++++++++ VOJTA PART BEGINS
 
-  int N_noises=2;
+  int N_noises=10;
 
 
   // ========================================
@@ -436,8 +436,8 @@ int core(int argc,char** argv)
   memset(prop_s_wall,0,sizeof(prop_s_wall));
 
   // noise vector propagators
-  double *prop_ud_noise  = new double[N_noises * XYZTnodeSites * 3*4*3*4 *2];
-  memset(prop_ud_noise,0,sizeof(prop_ud_noise));
+  double *prop_noise  = new double[N_noises * XYZTnodeSites * 3*4*3*4 *2];
+  memset(prop_noise,0,sizeof(prop_noise));
 
 
 
@@ -532,14 +532,14 @@ int core(int argc,char** argv)
 
     // ========================================
     // calculation of noise propagators 
-/*
-    int prop_volume = XYZTnodeSites * 3*4*3*4;
+
+
     for(int i_noise=0; i_noise<N_noises; i_noise++){
 
       // dummy propagator
-      double *prop_ud   = new double[prop_volume*2];
+      double *prop_ud   = new double[XYZTnodeSites * 3*4*3*4 * 2];
 
-
+      // loop over nT
       for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
 
         vout.general("\n\n ++++++ NOISE num %2d, from time slice %2d\n",
@@ -556,14 +556,14 @@ int core(int argc,char** argv)
                         iT_noise_src_pos, sources->get_noise_ixyz(i_noise));          
         
         // selecto only iT=iT slice        
-        iT_slice_selection(prop_ud_noise,prop_ud, i_noise ,iT_noise_src_pos);  
+        iT_slice_selection(prop_noise,prop_ud, i_noise ,iT_noise_src_pos);  
         MPI_Barrier(MPI_COMM_WORLD);  
     
       }  //iT_noise_src_pos
           
       delete[] prop_ud;
     } //i_noise 
-*/
+
 
 
 
@@ -607,7 +607,7 @@ int core(int argc,char** argv)
 
       // ========================================
       //initialize two-hadron class and set all the parameters
-      class_two_hadrons Two_hadrons(prop_ud_wall,prop_s_wall, prop_ud_noise,sources);
+      class_two_hadrons Two_hadrons(prop_ud_wall,prop_s_wall, prop_noise,sources);
 
       Two_hadrons.set_base_name(base);
         snprintf(pr,sizeof(pr),"w_");
@@ -636,7 +636,7 @@ int core(int argc,char** argv)
   delete[] prop_s_wall;
   delete[] prop_ud_wall;
 
-  delete[] prop_ud_noise;
+  delete[] prop_noise;
 
   // from template
   delete U_fixed;
@@ -700,7 +700,7 @@ static void converter(std::valarray<Field_F>& sq, double prop[])
 
 //---------------------------------------------------------------------
 /**
- calculating propagators from a given source
+ calculating propagators from a given source --- almost all copied from template
  */
 //---------------------------------------------------------------------
 
@@ -766,6 +766,12 @@ static void propagators_solve(string label,
 }      
 
 
+//---------------------------------------------------------------------
+/**
+ selecting only t=iT slice of the propagator 
+ */
+//---------------------------------------------------------------------
+
 static void iT_slice_selection(double *prop_final,
                                double *prop_tmp,
                                int noise_i, int iT_pos){
@@ -783,7 +789,7 @@ static void iT_slice_selection(double *prop_final,
 //          Communicator::self(),XnodeCoor,YnodeCoor,ZnodeCoor,TnodeCoor,
 //          iT_noise_pos, iT_node);
 
-    int noise_index=noise_i*XYZTnodeSites * 3*4*3*4;
+    int noise_index = noise_i*XYZTnodeSites * 3*4*3*4;
 
     #define Dirac(     alpha, x)  (alpha +  4*(x))
     #define Color(     c,     x)  (c     +  3*(x))
