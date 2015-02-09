@@ -60,18 +60,32 @@ void class_two_hadrons::run_GF(string hadron_names){
     run_GF_pi_sigma_tree(correlator_tree);
     corr_print(correlator_tree, hadron_names+"_tree");
 
+    if(MPI_rank==0){
+      printf(" ++++++ run_GF : calculate the tree part of %10s propagator W/O noise %s\n",
+           hadron_names.c_str(), LocalTime().c_str());
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    double correlator_tree_NN[2*Tsites];
+    memset(correlator_tree_NN,0,sizeof(correlator_tree_NN));  
+    run_GF_pi_sigma_tree_NONOISE(correlator_tree_NN);
+    corr_print(correlator_tree_NN, hadron_names+"_tree_NOnoise");
     //if(MPI_rank==0){
     //  printf(" +++++++ run_GF : calculate the loop part of %10s propagator        %s\n",
     //       hadron_names.c_str(), LocalTime().c_str());
     //}
     //
+    if(MPI_rank==0){
+      printf(" ++++++ run_GF : calculate just the noise %s\n",
+             LocalTime().c_str());
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
     double correlator_loop[2*Tsites];
     memset(correlator_loop,0,sizeof(correlator_loop));  
-    //run_GF_pi_sigma_loop(correlator_loop);
-    corr_print(correlator_loop, hadron_names+"_loop");
+    run_GF_pi_sigma_loop(correlator_loop);
+    corr_print(correlator_loop, hadron_names+"_sum_of_noise");
     
     for(int i=0;i<2*Tsites;i++){
-      correlator[i]=correlator_tree[i]+correlator_loop[i];
+      correlator[i]=correlator_tree[i]+correlator_tree_NN[i];
     }
   }
   else{
@@ -109,16 +123,29 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
   #pragma omp parallel for
   for(int it = 0; it < TnodeSites; it++){
 
+    printf("MPI= %2d, OMP= %2d \ttime %d\t\t\t%s\n",MPI_rank,omp_get_thread_num(),it, LocalTime().c_str());
+    
     // noise summation
     COMPLEX sum_N = COMPLEX_ZERO;
     for(int i_noise = 0; i_noise < N_noises; i_noise++){
     
+      printf("MPI= %2d, OMP= %d\ttime %d\t noise %d \n",MPI_rank, omp_get_thread_num(),it, i_noise);
+    
       COMPLEX* Noise      = (COMPLEX*)sources->get_noise_ixyz(i_noise);
+
+    //if(MPI_rank==0){
+    //  printf("OMP= %d\ttime %d\t noise %d    after\n",omp_get_thread_num(),it, i_noise);
+    //}
 
 
       // free Dirac index summation
       COMPLEX sum_freeDI = COMPLEX_ZERO;
       for(int ALPHA = 0; ALPHA < 2; ALPHA++){
+
+    //if(MPI_rank==0){
+    //  printf("OMP= %d\ttime %d\t noise %d\t dirac %d\n",omp_get_thread_num(),it, i_noise,ALPHA);
+    //}
+
 
         // source summation
         COMPLEX sum_source = COMPLEX_ZERO;
@@ -132,6 +159,10 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
         for(int gammaP  = 0; gammaP < 4; gammaP++){
           int deltaP = icg5[gammaP]; 
           
+    //if(MPI_rank==0){
+    //  printf("OMP= %d\ttime %d\t noise %d\t dirac %d\t source %d %d %d %d\n",omp_get_thread_num(),it, i_noise,ALPHA, dP,alphaP,colorP,gammaP);
+    //}
+
           
           
           // sink summation
@@ -146,10 +177,13 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
           for(int gamma   = 0; gamma  < 4; gamma++){
             int delta = icg5[gamma]; 
 
+    //if(MPI_rank==0){
+    //  printf("                     sink %d %d %d %d\n", d,alpha,color,gamma);
+    //}
+
             //sum Y_ixyz
             COMPLEX sum_Y_ixyz = COMPLEX_ZERO;
             for(int Y_ixyz = 0;  Y_ixyz < XYZnodeSites; Y_ixyz++){
-            
               sum_Y_ixyz += Noise[Y_ixyz] * 
                             back_prop(Prop_ud,       d, alpha, dP, betaP, Y_ixyz, it);
             }//Y_ixyz
@@ -158,7 +192,6 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
             //sum X_ixyz
             COMPLEX sum_X_ixyz = COMPLEX_ZERO;
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
-            
               sum_X_ixyz+=Conj(Noise[X_ixyz]) * 
                           Prop_s[ prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ]*
                           ( -0.5*                                                               //-1/2 T1
@@ -205,13 +238,13 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
       }//ALPHA
     
       sum_N += sum_freeDI/N_noises;
-    }//noise_i
+    }//i_noise
 
 
 //    printf("MPI %i OMP %i ... it %i sum %1.16e %1.16e I\n", 
 //           MPI_rank,omp_get_thread_num(), it,Real(sum_ixyz),Imag(sum_ixyz));
  
-  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_N/(N_noises*2.0*12.0*24.0*12.0*24.0);
+  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_N;
     
   } // it, end of omp parallel
 
@@ -248,11 +281,7 @@ void class_two_hadrons::run_GF_pi_sigma_tree_NONOISE(double* correlator){
   #pragma omp parallel for
   for(int it = 0; it < TnodeSites; it++){
 
-    // noise summation
-    COMPLEX sum_N = COMPLEX_ZERO;
-    for(int i_noise = 0; i_noise < N_noises; i_noise++){
-    
-      COMPLEX* Noise      = (COMPLEX*)sources->get_noise_ixyz(i_noise);
+    printf("MPI= %2d, OMP= %2d \ttime %d\t\t\t%s\n",MPI_rank,omp_get_thread_num(),it, LocalTime().c_str());
 
 
       // free Dirac index summation
@@ -335,14 +364,12 @@ void class_two_hadrons::run_GF_pi_sigma_tree_NONOISE(double* correlator){
         sum_freeDI += 0.5 * sum_source;
       }//ALPHA
     
-      sum_N += sum_freeDI/N_noises;
-    }//noise_i
 
 
 //    printf("MPI %i OMP %i ... it %i sum %1.16e %1.16e I\n", 
 //           MPI_rank,omp_get_thread_num(), it,Real(sum_ixyz),Imag(sum_ixyz));
  
-  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_N/(N_noises*2.0*12.0*24.0*12.0*24.0);
+  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_freeDI;
     
   } // it, end of omp parallel
 
@@ -385,6 +412,8 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
   #pragma omp parallel for
   for(int it = 0; it < TnodeSites; it++){
 
+    printf("MPI= %2d, OMP= %2d \ttime %d\t\t\t%s\n",MPI_rank,omp_get_thread_num(),it, LocalTime().c_str());
+
     // noise summation
     COMPLEX sum_N = COMPLEX_ZERO;
     for(int i_noise = 0; i_noise < N_noises; i_noise++){
@@ -414,7 +443,7 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
             COMPLEX sum_Y_ixyz = COMPLEX_ZERO;
             for(int Y_ixyz = 0;  Y_ixyz < XYZnodeSites; Y_ixyz++){
             
-              sum_Y_ixyz += 1.0;
+              sum_Y_ixyz += Noise[Y_ixyz];
             }//Y_ixyz
             
             
@@ -426,7 +455,7 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
             }//X_ixyz
            
 
-            sum_sink += sum_Y_ixyz;
+            sum_sink += sum_Y_ixyz/XYZnodeSites;
           }}}}//sink
 
 
@@ -443,7 +472,7 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
 //    printf("MPI %i OMP %i ... it %i sum %1.16e %1.16e I\n", 
 //           MPI_rank,omp_get_thread_num(), it,Real(sum_ixyz),Imag(sum_ixyz));
  
-  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_N;
+  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_N/(N_noises*2.0*12.0*24.0*12.0*24.0);
     
   } // it, end of omp parallel
 

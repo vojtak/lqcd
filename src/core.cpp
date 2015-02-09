@@ -422,7 +422,14 @@ int core(int argc,char** argv)
   // ========================================
   // ++++++++++++++++++++++ VOJTA PART BEGINS
 
-  int N_noises=10;
+  int noises[5] = {1,4,10,20, 50};
+  for(int ii=0;ii<1;ii++){
+
+  vout.general("\n\n\t ======================================");
+  vout.general("\n\t ============== NUMBER OF NOISES = %2d ",noises[ii]);
+  vout.general("\n\t                beginning at           %s\n\n", LocalTime());
+  
+  int N_noises=noises[ii];
 
 
   // ========================================
@@ -533,7 +540,7 @@ int core(int argc,char** argv)
     // ========================================
     // calculation of noise propagators 
 
-
+/*
     for(int i_noise=0; i_noise<N_noises; i_noise++){
 
       // dummy propagator
@@ -563,7 +570,7 @@ int core(int argc,char** argv)
           
       delete[] prop_ud;
     } //i_noise 
-
+*/
 
 
 
@@ -572,7 +579,7 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
 //    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=4;iT_src_pos<5;iT_src_pos++){
+    for(int iT_src_pos=14;iT_src_pos<18;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
@@ -594,7 +601,7 @@ int core(int argc,char** argv)
       // ========================================
       // set prefix for this particular run
       char pr[50];
-      snprintf(pr,sizeof(pr),"w_"); 
+      snprintf(pr,sizeof(pr),"nn_%02d_",N_noises); 
 
       // ========================================
       //initialize single hadron class and set all the parameters
@@ -610,7 +617,6 @@ int core(int argc,char** argv)
       class_two_hadrons Two_hadrons(prop_ud_wall,prop_s_wall, prop_noise,sources);
 
       Two_hadrons.set_base_name(base);
-        snprintf(pr,sizeof(pr),"w_");
       Two_hadrons.set_prefix_name(pr);
       Two_hadrons.set_source_position(iT_src_pos);
       Two_hadrons.set_noise_number(N_noises);
@@ -628,7 +634,7 @@ int core(int argc,char** argv)
 
     } // iT_src_pos - loop over source positions
   } // iarg - loop over configurations
-
+  
   // ####  tydy up  ####
   // VOJTA
   delete sources;
@@ -637,7 +643,8 @@ int core(int argc,char** argv)
   delete[] prop_ud_wall;
 
   delete[] prop_noise;
-
+  } //N_noises
+  
   // from template
   delete U_fixed;
   delete U;
