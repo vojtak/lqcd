@@ -24,8 +24,14 @@
 #include "HAL_indexes.h"
 
 #include "class_global_wrapper.h"
-#include "class_hadron.h"
 
+
+int class_global_wrapper::rank_from_coor(int x,int y, int z, int t){
+    int rank;
+    int coor[4]={x,y,z,t};
+    Communicator::grid_rank(&rank,coor);
+    return rank;
+}
 
 
 void class_global_wrapper::create_directory(string path){

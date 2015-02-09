@@ -139,6 +139,9 @@ class class_global_wrapper{
   inline int index_xyzt(int x,int y, int z, int t){
     return x + XnodeSites*(y+YnodeSites *( z + ZnodeSites *t));
   }
+
+
+  int rank_from_coor(int x,int y, int z, int t);
   
   void create_directory(string path);
   string LocalTime();

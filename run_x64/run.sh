@@ -5,12 +5,12 @@
 rm -rf results/
 mkdir results
 
-export OMP_NUM_THREADS=2
+export OMP_NUM_THREADS=1
 
 #export PROFILEDIR=profile
 #mkdir profile
 
-mpirun -np 4 \
+mpirun -np 8 \
       ../build/V_LQCD.x \
       -quark_ud ud.yaml \
       -quark_s s.yaml \
