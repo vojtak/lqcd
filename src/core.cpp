@@ -540,7 +540,7 @@ int core(int argc,char** argv)
     // ========================================
     // calculation of noise propagators 
 
-/*
+
     for(int i_noise=0; i_noise<N_noises; i_noise++){
 
       // dummy propagator
@@ -570,7 +570,7 @@ int core(int argc,char** argv)
           
       delete[] prop_ud;
     } //i_noise 
-*/
+
 
 
 

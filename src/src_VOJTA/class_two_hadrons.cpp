@@ -95,7 +95,7 @@ void class_two_hadrons::run_GF(string hadron_names){
   }
 
 
-  corr_print(correlator, hadron_names);
+  //corr_print(correlator, hadron_names);
   
 };
 
@@ -124,7 +124,7 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
   for(int it = 0; it < TnodeSites; it++){
 
     if(MPI_rank==0){
-      printf("OMP= %2d \ttime %d\t\t\t%s\n",omp_get_thread_num(),it, LocalTime().c_str());
+      printf("OMP= %2d   time %2d\t\t\t%s",omp_get_thread_num(),it, LocalTime().c_str());
     }
     
     // noise summation
@@ -132,7 +132,7 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
     for(int i_noise = 0; i_noise < N_noises; i_noise++){
     
       if(MPI_rank==0){
-        printf("OMP= %d\ttime %d\t noise %d \n", omp_get_thread_num(),it, i_noise);
+        printf("OMP= %2d   time %2d   noise %2d \n", omp_get_thread_num(),it, i_noise);
       }
       COMPLEX* Noise      = (COMPLEX*)sources->get_noise_ixyz(i_noise);
 
@@ -285,7 +285,7 @@ void class_two_hadrons::run_GF_pi_sigma_tree_NONOISE(double* correlator){
   for(int it = 0; it < TnodeSites; it++){
 
     if(MPI_rank==0){
-      printf("OMP= %2d \ttime %d\t\t\t%s\n", omp_get_thread_num(),it, LocalTime().c_str());
+      printf("OMP= %2d   time %2d\t\t\t%s",omp_get_thread_num(),it, LocalTime().c_str());
     }
 
       // free Dirac index summation
@@ -417,7 +417,7 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
   for(int it = 0; it < TnodeSites; it++){
 
     if(MPI_rank==0){
-      printf("OMP= %2d \ttime %d\t\t\t%s\n",omp_get_thread_num(),it, LocalTime().c_str());
+      printf("OMP= %2d   time %2d\t\t\t%s",omp_get_thread_num(),it, LocalTime().c_str());
     }
     // noise summation
     COMPLEX sum_N = COMPLEX_ZERO;
