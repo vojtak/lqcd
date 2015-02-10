@@ -10,7 +10,7 @@ mkdir results
 #export PROFILEDIR=profile
 #mkdir profile
 
-mpirun -np 16 \
+mpirun -np 1 \
       ../build/V_LQCD.x \
       -quark_ud ud.yaml \
       -quark_s s.yaml \
