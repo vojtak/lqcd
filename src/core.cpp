@@ -543,6 +543,7 @@ int core(int argc,char** argv)
 
     for(int i_noise=0; i_noise<N_noises; i_noise++){
 
+
       // dummy propagator
       double *prop_ud   = new double[XYZTnodeSites * 3*4*3*4 * 2];
 
