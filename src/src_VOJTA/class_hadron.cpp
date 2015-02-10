@@ -45,9 +45,10 @@ void class_hadron::run_GF(string hadron_name){
   memset(correlator,0,sizeof(correlator));
 
   if(MPI_rank==0){
-    printf("  +++ run_GF : calculate %s propagator        %s\n",
+    printf(" ++++++ run_GF : calculate %s propagator,  %s\n",
          hadron_name.c_str(), LocalTime().c_str());
   }
+  MPI_Barrier(MPI_COMM_WORLD);
   
   if(hadron_name=="pion"){
   
@@ -98,7 +99,7 @@ void class_hadron::run_GF_meson(double* correlator, double* prop_quark, double* 
   COMPLEX* Prop_quark     = (COMPLEX*)prop_quark     ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
   COMPLEX* Prop_antiquark = (COMPLEX*)prop_antiquark ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
 
-#define back_prop(prop,c,a,cp,ap,ixyzt,it)                               \
+#define back_prop(prop,c,a,cp,ap,ixyz,it)                               \
         ( ZGM(a,5) * ZGM (IGM(ap,5),5) *                                 \
           Conj(prop[ prop_slv_idx(c,IGM(a,5),cp,IGM(ap,5) ,ixyz,it) ]) )
 
@@ -421,7 +422,7 @@ void class_hadron::corr_print(double *correlator, string hadron_name)
   if(MPI_rank==0){
 
     // create directory and file name
-    string dir="results/"+base+"/"+prefix+"correlators/";
+    string dir="results/"+base+"/"+prefix+"correlators_one_hadron/";
     //printf("%s %s\n",prefix.c_str(),dir.c_str());
     create_directory(dir);
   
@@ -431,7 +432,9 @@ void class_hadron::corr_print(double *correlator, string hadron_name)
              hadron_name.c_str(),
              iT_src);
 
- 
+    printf(" ++++++ corr_print : print %10s propagator to file %s\n                     %s\n",
+           hadron_name.c_str(), wfile, LocalTime().c_str());
+
     // open output file
     string ofname(wfile);
     std::ofstream fout(ofname.c_str());

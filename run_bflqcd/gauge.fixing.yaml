@@ -1,0 +1,11 @@
+GaugeFixing:
+  ## gauge_fixing_type = {Coulomb,Landau}
+  maximum_number_of_iteration   : 100000
+  number_of_naive_iteration     : 20
+  interval_of_measurement       : 100
+  iteration_to_reset            : 3000
+  convergence_criterion_squared : 1.0e-20
+  overrelaxation_parameter      : 1.6
+  ## verbose_level = {Crucial,General,Detailed,Paranoiac}
+  verbose_level                 : General
+

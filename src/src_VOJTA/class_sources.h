@@ -5,6 +5,7 @@
 #include "randomc.h"
 
 
+
 class class_sources : public class_global_wrapper {
 
   public:
@@ -69,6 +70,13 @@ class class_sources : public class_global_wrapper {
   void generate_point_ixyz(double *point, int X_coor, int Y_coor, int Z_coor);
   void generate_wall_ixyz(double *wall);
   void generate_noise_ixyz(double *noise);
+
+int rank_from_coor1(int x,int y, int z, int t){
+    int rank;
+    int coor[4]={x,y,z,t};
+    Communicator::grid_rank(&rank,coor);
+    return rank;
+}
 
 
   // =======================================

@@ -83,6 +83,12 @@ class class_global_wrapper{
     iT_src = iT_src_in;
   };
 
+  // source position in time
+  int N_noises;		
+  void set_noise_number(int N_noises_in){
+    N_noises = N_noises_in;
+  };
+
 
   // =======================================
   // global parameters
@@ -125,6 +131,7 @@ class class_global_wrapper{
   // other useful functions
   //
 
+
   inline int index_xyz(int x,int y, int z){
     return x + XnodeSites*(y+YnodeSites *z);
   }
@@ -132,6 +139,9 @@ class class_global_wrapper{
   inline int index_xyzt(int x,int y, int z, int t){
     return x + XnodeSites*(y+YnodeSites *( z + ZnodeSites *t));
   }
+
+
+  int rank_from_coor(int x,int y, int z, int t);
   
   void create_directory(string path);
   string LocalTime();
