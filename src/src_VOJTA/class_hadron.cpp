@@ -432,7 +432,7 @@ void class_hadron::corr_print(double *correlator, string hadron_name)
              hadron_name.c_str(),
              iT_src);
 
-    printf(" ++++++ corr_print : print %10s propagator to file %s\n        \t%s\n",
+    printf(" ++++++ corr_print : print %10s propagator to file %s\n                     %s\n",
            hadron_name.c_str(), wfile, LocalTime().c_str());
 
     // open output file
