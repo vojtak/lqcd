@@ -1,5 +1,6 @@
 #general system backups
 *~
+.DS_Store
 
 # ipython backups
 *.ipynb_checkpoints*
