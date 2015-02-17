@@ -69,11 +69,12 @@ void class_two_hadrons::run_GF(string hadron_names){
            hadron_names.c_str(), LocalTime().c_str());
     }
     MPI_Barrier(MPI_COMM_WORLD);
+
     double correlator_tree_test[2*Tsites];
     memset(correlator_tree_test,0,sizeof(correlator_tree_test));  
     run_GF_pi_sigma_tree_TEST(correlator_tree_test);
     if(MPI_rank==0){
-      printf(" ++++++ run_GF : end %40s\n\n", LocalTime().c_str());
+      printf(" ++++++ run_GF : end %77s\n\n", LocalTime().c_str());
     }
     
     corr_print(correlator_tree     , hadron_names+"_tree"     );
@@ -276,7 +277,6 @@ void class_two_hadrons::run_GF_pi_sigma_tree_TEST(double* correlator){
   memset(correlator_global,0,sizeof(correlator_global));
   
   // correlator itself
-  // correlator itself
   #pragma omp parallel for
   for(int it = 0; it < TnodeSites; it++){
 
@@ -325,56 +325,30 @@ void class_two_hadrons::run_GF_pi_sigma_tree_TEST(double* correlator){
 
           
           
+          // sink summation
+          COMPLEX sum_sink = COMPLEX_ZERO;
+          for(int d       = 0; d      < 3; d ++){
+          for(int alpha   = 0; alpha  < 4; alpha++){
+            int beta=IGM(alpha,5);
+          for(int color   = 0; color  < 6; color++){
+            int a    =Eps(0,color);
+            int b    =Eps(1,color);
+            int c    =Eps(2,color);          
+          for(int gamma   = 0; gamma  < 4; gamma++){
+            int delta = icg5[gamma]; 
 
     //if(MPI_rank==0){
     //  printf("                     sink %d %d %d %d\n", d,alpha,color,gamma);
     //}
 
             //sum Y_ixyz
-            COMPLEX sum_Y_ixyz = COMPLEX_ZERO;
+            COMPLEX sum_XY_ixyz = COMPLEX_ZERO;
             for(int Y_ixyz = 0;  Y_ixyz < XYZnodeSites; Y_ixyz++){
-
-
-          // sink summation
-          COMPLEX sum_sink = COMPLEX_ZERO;
-          for(int d       = 0; d      < 3; d ++){
-          for(int alpha   = 0; alpha  < 4; alpha++){
-            int beta=IGM(alpha,5);
-          for(int color   = 0; color  < 6; color++){
-            int a    =Eps(0,color);
-            int b    =Eps(1,color);
-            int c    =Eps(2,color);          
-          for(int gamma   = 0; gamma  < 4; gamma++){
-            int delta = icg5[gamma]; 
-
-              sum_Y_ixyz += Noise[Y_ixyz] * 
-                            back_prop(Prop_ud,       d, alpha, dP, betaP, Y_ixyz, it)*
-                            ZGM(alpha,5) * Eps(3,color) * zcg5[gamma];
-              }}}}//sink
-
-            }//Y_ixyz
-            
-            
-            //sum X_ixyz
-            COMPLEX sum_X_ixyz = COMPLEX_ZERO;
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
-
-
-          // sink summation
-          COMPLEX sum_sink = COMPLEX_ZERO;
-          for(int d       = 0; d      < 3; d ++){
-          for(int alpha   = 0; alpha  < 4; alpha++){
-            int beta=IGM(alpha,5);
-          for(int color   = 0; color  < 6; color++){
-            int a    =Eps(0,color);
-            int b    =Eps(1,color);
-            int c    =Eps(2,color);          
-          for(int gamma   = 0; gamma  < 4; gamma++){
-            int delta = icg5[gamma]; 
-
-
-              sum_X_ixyz+=Conj(Noise[X_ixyz]) * 
-                          Prop_s[ prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ]*
+              sum_XY_ixyz += Noise[Y_ixyz] * 
+                             back_prop(Prop_ud,       d, alpha, dP, betaP, Y_ixyz, it)*
+                             Conj(Noise[X_ixyz]) * 
+                             Prop_s[ prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ]*
                           ( -0.5*                                                               //-1/2 T1
                             Prop_ud[ prop_slv_idx(b, gamma,  dP, alphaP,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(a, ALPHA,  aP, ALPHA ,  X_ixyz,it) ]*
@@ -400,16 +374,20 @@ void class_two_hadrons::run_GF_pi_sigma_tree_TEST(double* correlator){
                             Prop_ud[ prop_slv_idx(d, beta ,  aP, ALPHA ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(a, ALPHA,  bP, gammaP,  X_ixyz,it) ]
                             
-                          )*
-                            ZGM(alpha,5) * Eps(3,color) * zcg5[gamma];
-              }}}}//sink
-                           
+                          )
+                           ;
             }//X_ixyz
+            }//Y_ixyz
+            
            
 
+            sum_sink += sum_XY_ixyz *
+                        ZGM(alpha,5) * Eps(3,color) * zcg5[gamma];
+          }}}}//sink
 
 
-          sum_source += sum_X_ixyz*sum_Y_ixyz;
+          sum_source += sum_sink *
+                        ZGM(alphaP,5) * Eps(3,colorP) * zcg5[gammaP];
                         
         }}}}//source
       
@@ -461,6 +439,44 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
   
   double correlator_global[2*Tsites];
   memset(correlator_global,0,sizeof(correlator_global));
+
+  // calculating source contraction first
+  COMPLEX source_contraction_local[3][4][3][4];
+  memset(source_contraction_local,0,sizeof(source_contraction_local));
+  COMPLEX source_contraction_global[3][4][3][4];
+  memset(source_contraction_global,0,sizeof(source_contraction_global));
+  
+  int iT_src_pos=(iT_src+100*Tsites) % Tsites;
+  if (iT_src_pos/TnodeSites == TnodeCoor) {
+
+    int it = iT_src_pos % TnodeSites;
+
+    #pragma omp parallel for
+    for(int index=0; index<144;index++){
+
+      alphaP = index      % 3;
+      aP     = (index/3)  % 4;
+      alpha  = (index/12) % 3;
+      a      = (index/36) % 4;
+
+      printf("MPI %i OMP %i ... iT_src %i it %i  ..... index %i, %i-%i-%i-%i \n", 
+              MPI_rank,omp_get_thread_num(), iT_src_pos, it, index,a, alpha, aP, alphaP);
+ 
+      for(int Z_ixyz = 0;  Z_ixyz < XYZnodeSites; Z_ixyz++){            
+        source_contraction_local[a][alpha][aP][alphaP] += Prop_ud[ prop_slv_idx(a, alpha, aP, alphaP, Z_ixyz, it) ];
+      }
+    }
+
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+  printf("MPI %i OMP %i ... corr_loc[0] %1.16e %1.16e I\n", 
+          MPI_rank , omp_get_thread_num(), Real(source_contraction_local[0]),
+                                           Imag(source_contraction_local[0]));
+  MPI_Allreduce(source_contraction_local, source_contraction_global, 
+                288, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  printf("MPI %i OMP %i ... corr_loc[0] %1.16e %1.16e I\n", 
+          MPI_rank , omp_get_thread_num(), Real(source_contraction_global[0]),
+                                           Imag(source_contraction_global[0]));
   
   // correlator itself
   #pragma omp parallel for
