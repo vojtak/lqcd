@@ -1,11 +1,11 @@
 #general system backups
+
 *~
 .DS_Store
 
-# ipython backups
-*.ipynb_checkpoints*
 
 #logs and errors
+
 *log*
 *error*
 *.out*
@@ -13,11 +13,11 @@
 
 *stdout*
 
+
 #binaries, configurations, and results
 
 build/*
 configurations*
 results*
 
-#analysis folder 
-x_analysis/*
+

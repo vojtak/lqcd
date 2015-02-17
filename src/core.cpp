@@ -422,14 +422,14 @@ int core(int argc,char** argv)
   // ========================================
   // ++++++++++++++++++++++ VOJTA PART BEGINS
 
-  int noises[5] = {1,4,10,20, 50};
-  for(int ii=0;ii<5;ii++){
+//  int noises[5] = {1,4,10,20, 50};
+//  for(int ii=0;ii<5;ii++){
 
-  vout.general("\n\n\t ======================================");
-  vout.general("\n\t ============== NUMBER OF NOISES = %2d ",noises[ii]);
-  vout.general("\n\t                beginning at           %s\n\n", LocalTime());
+//  vout.general("\n\n\t ======================================");
+//  vout.general("\n\t ============== NUMBER OF NOISES = %2d ",noises[ii]);
+//  vout.general("\n\t                beginning at           %s\n\n", LocalTime());
   
-  int N_noises=noises[ii];
+  int N_noises=1;
 
 
   // ========================================
@@ -460,8 +460,8 @@ int core(int argc,char** argv)
   // main loop w.r. to gauge configurations
   //---------------------------------------------------------------------
 
-//  for(int iarg = 0; iarg <1; iarg++){
-  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
+  for(int iarg = 0; iarg <1; iarg++){
+//  for(int iarg = 0; iarg < gfile_list.size(); iarg++){
 
 
     string ifname(gfile_list[iarg]);
@@ -580,7 +580,7 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
 //    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=14;iT_src_pos<18;iT_src_pos++){
+    for(int iT_src_pos=14;iT_src_pos<15;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
@@ -602,7 +602,7 @@ int core(int argc,char** argv)
       // ========================================
       // set prefix for this particular run
       char pr[50];
-      snprintf(pr,sizeof(pr),"nn_%02d_",N_noises); 
+      snprintf(pr,sizeof(pr),""); 
 
       // ========================================
       //initialize single hadron class and set all the parameters
@@ -626,9 +626,11 @@ int core(int argc,char** argv)
       // ========================================
       // run all green functions 
 
-      Hadron_wall.run_all_GF();
+
+      //Hadron_wall.run_all_GF();
 
       Two_hadrons.run_all_GF();
+
  
       ///////////////////////////////////////////////////////////
    
@@ -636,7 +638,7 @@ int core(int argc,char** argv)
     } // iT_src_pos - loop over source positions
   } // iarg - loop over configurations
   
-  // ####  tydy up  ####
+  // ####  tidy up  ####
   // VOJTA
   delete sources;
 
@@ -644,7 +646,7 @@ int core(int argc,char** argv)
   delete[] prop_ud_wall;
 
   delete[] prop_noise;
-  } //N_noises
+//  } //N_noises
   
   // from template
   delete U_fixed;
