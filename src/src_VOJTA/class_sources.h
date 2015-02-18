@@ -34,8 +34,7 @@ class class_sources : public class_global_wrapper {
 
 
   void print();       //for debugging
-  void print_full();  //for debugging
-  
+
 
   double *get_point_ixyz();
   double *get_wall_ixyz();

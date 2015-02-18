@@ -422,14 +422,25 @@ int core(int argc,char** argv)
   // ========================================
   // ++++++++++++++++++++++ VOJTA PART BEGINS
 
-//  int noises[5] = {1,4,10,20, 50};
-//  for(int ii=0;ii<5;ii++){
+  int noises[4] = {1,4,10,20};
+  for(int i=0;i<4;i++){
 
-//  vout.general("\n\n\t ======================================");
-//  vout.general("\n\t ============== NUMBER OF NOISES = %2d ",noises[ii]);
-//  vout.general("\n\t                beginning at           %s\n\n", LocalTime());
-  
-  int N_noises=1;
+  vout.general("\n\n\t ======================================");
+  vout.general("\n\t ============== NUMBER OF NOISES = %2d ",noises[i]);
+  vout.general("\n\t                beginning at           %s\n\n", LocalTime());
+
+  if(Communicator::self()==0){
+    int grid_coor[4];
+    printf("\n");
+    for(int ii=0;ii<Xnodes*Ynodes*Znodes*Tnodes;ii++){
+      Communicator::grid_coord(grid_coor, ii);
+      printf("MPI = %3i, grid coor = %2i-%2i-%2i-%2i\n", 
+             ii, grid_coor[0],grid_coor[1],grid_coor[2],grid_coor[3]);
+    }
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  int N_noises=noises[i];
 
 
   // ========================================
@@ -580,7 +591,7 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
 //    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=14;iT_src_pos<15;iT_src_pos++){
+    for(int iT_src_pos=9;iT_src_pos<18;iT_src_pos+=4){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
@@ -602,7 +613,8 @@ int core(int argc,char** argv)
       // ========================================
       // set prefix for this particular run
       char pr[50];
-      snprintf(pr,sizeof(pr),""); 
+      snprintf(pr,sizeof(pr),"nn_%02d_",N_noises); 
+      //snprintf(pr,sizeof(pr),""); 
 
       // ========================================
       //initialize single hadron class and set all the parameters
@@ -646,7 +658,7 @@ int core(int argc,char** argv)
   delete[] prop_ud_wall;
 
   delete[] prop_noise;
-//  } //N_noises
+  } //N_noises
   
   // from template
   delete U_fixed;
