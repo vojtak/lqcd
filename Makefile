@@ -97,8 +97,8 @@ Clean:
 	rm -fr build
 
 msg2:
-	@echo $(SRCS)
-	@echo $(BIN_OBJS)
+#	@echo $(SRCS)
+#	@echo $(BIN_OBJS)
 #	@echo $(objects)
 #	@echo $(osrc_dirs)
 

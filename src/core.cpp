@@ -428,7 +428,18 @@ int core(int argc,char** argv)
 //  vout.general("\n\n\t ======================================");
 //  vout.general("\n\t ============== NUMBER OF NOISES = %2d ",noises[ii]);
 //  vout.general("\n\t                beginning at           %s\n\n", LocalTime());
-  
+
+  if(Communicator::self()==0){
+    int grid_coor[4];
+    printf("\n");
+    for(int ii=0;ii<Xnodes*Ynodes*Znodes*Tnodes;ii++){
+      Communicator::grid_coord(grid_coor, ii);
+      printf("MPI = %3i, grid coor = %2i-%2i-%2i-%2i\n", 
+             ii, grid_coor[0],grid_coor[1],grid_coor[2],grid_coor[3]);
+    }
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+
   int N_noises=1;
 
 
@@ -580,7 +591,7 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
 //    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=14;iT_src_pos<15;iT_src_pos++){
+    for(int iT_src_pos=9;iT_src_pos<10;iT_src_pos++){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());

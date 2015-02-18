@@ -40,7 +40,7 @@ void class_sources :: run(){
 void class_sources :: generate_point_source(int X_coor, int Y_coor, int Z_coor){
 
    if(MPI_rank==0){
-     printf("\n ++++++ generating point source at x = %2d, y = %2d, z = %2d\n",X_coor, Y_coor, Z_coor);
+     printf(" ++++++ generating point source at x = %2d, y = %2d, z = %2d\n",X_coor, Y_coor, Z_coor);
    }
    MPI_Barrier(MPI_COMM_WORLD);
    
@@ -56,7 +56,7 @@ void class_sources :: generate_point_source(int X_coor, int Y_coor, int Z_coor){
 void class_sources :: generate_wall_source(){
 
    if(MPI_rank==0){
-     printf("\n ++++++ generating wall source\n");
+     printf(" ++++++ generating wall source\n");
    }
    MPI_Barrier(MPI_COMM_WORLD);
    
@@ -80,7 +80,7 @@ void class_sources :: generate_noise_source_vector(int N_noises_in){
    for(int n=0; n<N_noises;n++){
 
      if(MPI_rank==0){
-       printf("\n ++++++ generating noise source # %2d\n",n);
+       printf(" ++++++ generating noise source # %2d\n",n);
      }
      MPI_Barrier(MPI_COMM_WORLD);
    
@@ -95,9 +95,9 @@ void class_sources :: generate_noise_source_vector(int N_noises_in){
      im_av+=noise_sources_vector[2*i+1];
    }
 
-   printf("\n MPI %2i, average = %1.16e + I %1.16e\n", 
-          MPI_rank, re_av/XYZnodeSites/N_noises, im_av/XYZnodeSites/N_noises);
-   MPI_Barrier(MPI_COMM_WORLD);
+   //printf("\n MPI %2i, average = %1.16e + I %1.16e\n", 
+   //       MPI_rank, re_av/XYZnodeSites/N_noises, im_av/XYZnodeSites/N_noises);
+   //MPI_Barrier(MPI_COMM_WORLD);
    
 
 }
@@ -150,9 +150,9 @@ void class_sources :: generate_point_ixyz(double *point, int X_coor, int Y_coor,
         Y_coor_node = (Y_coor+100*YnodeSites) % YnodeSites;
         Z_coor_node = (Z_coor+100*ZnodeSites) % ZnodeSites;
 
-  printf("selected: MPI %2i, xyztnode %2i,%2i,%2i,%2i .. coors %2i,%2i,%2i,  \n" ,
-          MPI_rank,XnodeCoor,YnodeCoor,ZnodeCoor,TnodeCoor,
-          X_coor_node, Y_coor_node, Z_coor_node);
+        printf("selected: MPI %2i, xyztnode %2i,%2i,%2i,%2i .. coors %2i,%2i,%2i,  \n" ,
+                MPI_rank,XnodeCoor,YnodeCoor,ZnodeCoor,TnodeCoor,
+                X_coor_node, Y_coor_node, Z_coor_node);
        
         point[2 * index_xyz(X_coor_node,Y_coor_node,Z_coor_node)] =1.00;
 
@@ -169,7 +169,7 @@ void class_sources :: generate_wall_ixyz(double* wall){
    
   for(int i=0;i<XYZnodeSites;i++){
 
-    wall[2*i]  =1.0/XYZsites;
+    wall[2*i]  =1.0;///XYZsites;
     wall[2*i+1]= 0.0;
   
   }
@@ -259,21 +259,5 @@ void class_sources :: print(){
   }
 }
 
-void class_sources :: print_full(){
-
-  if(MPI_rank==0){
-  for(int i=0; i<N_noises*XYZnodeSites+10;i++){
-      
-      printf("MPI %2i ... n= %2i ... i %2i   ran_num %1.16e %1.16e I, %1.16e %1.16e I, norm %1.16e\n", 
-               MPI_rank, -1 , i , noise_sources_vector[2*i],noise_sources_vector[2*i+1], 
-               Real(((COMPLEX*)noise_sources_vector)[i]),Imag(((COMPLEX*)noise_sources_vector)[i]),
-               Real(((COMPLEX*)noise_sources_vector)[i]*Conj(((COMPLEX*)noise_sources_vector)[i]))
-               );
-   }
-//  for(int i=0;i< N_noises * XnodeSites;i++){
-//  printf("%1.16e %1.16e I\n",noise_vector[2*i], noise_vector[2*i+1]);
-//  }
-  }
-}
 
 
