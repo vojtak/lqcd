@@ -24,7 +24,7 @@ class class_two_hadrons : public class_global_wrapper {
 
 
   // =======================================
-  // functions
+  // functions for correlators
   //
   
   void run_all_GF();
@@ -37,6 +37,11 @@ class class_two_hadrons : public class_global_wrapper {
   void run_GF_pi_sigma_loop(double* correlator);
   void run_GF_pi_sigma_loop_TEST(double* correlator);
 
+  // =======================================
+  // functions for NBS wave functions
+  //
+  
+  void run_all_NBSwf();
 
   private:
 
@@ -56,6 +61,7 @@ class class_two_hadrons : public class_global_wrapper {
   //
 
   void corr_print(double *correlator, string hadron_names);  
+  void NBSwf_print(double *correlator, string hadron_names);  
 
 
   // =======================================

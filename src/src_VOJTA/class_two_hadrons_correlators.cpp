@@ -456,7 +456,7 @@ void class_two_hadrons::run_GF_pi_sigma_tree_TEST(double* correlator){
 //    printf("MPI %i OMP %i ... it %i sum %1.16e %1.16e I\n", 
 //           MPI_rank,omp_get_thread_num(), it,Real(sum_ixyz),Imag(sum_ixyz));
  
-  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor]=sum_N;
+  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor] = sum_N / XYZsites;
     
   } // it, end of omp parallel
 
