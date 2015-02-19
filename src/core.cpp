@@ -125,6 +125,7 @@ static void iT_slice_selection(double *prop_final,
                                int noise_i,
                                int iT_pos);
 
+
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
 
@@ -422,7 +423,7 @@ int core(int argc,char** argv)
   // ========================================
   // ++++++++++++++++++++++ VOJTA PART BEGINS
 
-  int noises[4] = {1,4,10,20};
+  int noises[4] = {1,10,50,200};
   for(int i=0;i<4;i++){
 
   vout.general("\n\n\t ======================================");
@@ -456,7 +457,6 @@ int core(int argc,char** argv)
   // noise vector propagators
   double *prop_noise  = new double[N_noises * XYZTnodeSites * 3*4*3*4 *2];
   memset(prop_noise,0,sizeof(prop_noise));
-
 
 
   // ========================================
@@ -559,7 +559,8 @@ int core(int argc,char** argv)
       double *prop_ud   = new double[XYZTnodeSites * 3*4*3*4 * 2];
 
       // loop over nT
-      for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
+//      for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
+      for(int iT_noise_src_pos=2;iT_noise_src_pos<3;iT_noise_src_pos+=15){
 
         vout.general("\n\n ++++++ NOISE num %2d, from time slice %2d\n",
                   i_noise, iT_noise_src_pos);
@@ -571,13 +572,14 @@ int core(int argc,char** argv)
     
         // solve the propagator
         propagators_solve(label,
-                        fprop_ud, prop_ud,  
-                        iT_noise_src_pos, sources->get_noise_ixyz(i_noise));          
+                          fprop_ud, prop_ud,  
+                          iT_noise_src_pos, sources->get_noise_ixyz(i_noise));          
         
-        // selecto only iT=iT slice        
+       // selecto only iT=iT slice        
         iT_slice_selection(prop_noise,prop_ud, i_noise ,iT_noise_src_pos);  
         MPI_Barrier(MPI_COMM_WORLD);  
-    
+
+   
       }  //iT_noise_src_pos
           
       delete[] prop_ud;
@@ -591,14 +593,14 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
 //    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=9;iT_src_pos<18;iT_src_pos+=4){
+    for(int iT_src_pos=2;iT_src_pos<3;iT_src_pos+=4){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
  
       // ========================================
       // solve propagators
-     {
+     /*{
       propagators_solve("WALL ud",
                         fprop_ud, 
                         prop_ud_wall,  
@@ -608,7 +610,7 @@ int core(int argc,char** argv)
                         prop_s_wall,  
                         iT_src_pos, sources->get_wall_ixyz());          
      }
-
+*/
       
       // ========================================
       // set prefix for this particular run
@@ -816,10 +818,10 @@ static void iT_slice_selection(double *prop_final,
     #define Dirac(     alpha, x)  (alpha +  4*(x))
     #define Color(     c,     x)  (c     +  3*(x))
 
-    for(        int d     = 0; d    < 4; d++){
-      for(      int c     = 0; c    < 3; c++){
-        for(    int dP    = 0; dP   < 4; dP++){
-          for(  int cP    = 0; cP   < 3; cP++){
+    for(        int c     = 0; c    < 3; c++){
+      for(      int d     = 0; d    < 4; d++){
+        for(    int cP    = 0; cP   < 3; cP++){
+          for(  int dP    = 0; dP   < 4; dP++){
             for(int ixyz  = 0; ixyz < XYZnodeSites; ixyz++){
  
               ((COMPLEX*)prop_final)[noise_index +
