@@ -30,7 +30,7 @@ class class_sources : public class_global_wrapper {
    
   void generate_point_source(int X_coor, int Y_coor, int Z_coor);
   void generate_wall_source();
-  void generate_noise_source_vector(int N_noises_in);
+  void generate_noise_source_vector(int N_noises_in, string type);
 
 
   void print();       //for debugging
@@ -68,7 +68,8 @@ class class_sources : public class_global_wrapper {
 
   void generate_point_ixyz(double *point, int X_coor, int Y_coor, int Z_coor);
   void generate_wall_ixyz(double *wall);
-  void generate_noise_ixyz(double *noise);
+  void generate_noise_ixyz_U1(double *noise);
+  void generate_noise_ixyz_Z4(double *noise);
 
 int rank_from_coor1(int x,int y, int z, int t){
     int rank;
