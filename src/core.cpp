@@ -424,7 +424,7 @@ int core(int argc,char** argv)
   // ++++++++++++++++++++++ VOJTA PART BEGINS
 
   int noises[4] = {1,10,50,200};
-  for(int i=0;i<4;i++){
+  for(int i=0;i<3;i++){
 
   vout.general("\n\n\t ======================================");
   vout.general("\n\t ============== NUMBER OF NOISES = %2d ",noises[i]);
