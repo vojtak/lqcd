@@ -423,7 +423,7 @@ int core(int argc,char** argv)
   // ========================================
   // ++++++++++++++++++++++ VOJTA PART BEGINS
 
-  int noises[4] = {1,10,50,200};
+  int noises[4] = {1,4,10};
   for(int i=0;i<3;i++){
 
   vout.general("\n\n\t ======================================");
@@ -465,7 +465,7 @@ int core(int argc,char** argv)
   class_sources *sources = new class_sources();
  
   sources->generate_wall_source();
-  sources->generate_noise_source_vector(N_noises);
+  sources->generate_noise_source_vector(N_noises,"Z(4)");
 
   //---------------------------------------------------------------------
   // main loop w.r. to gauge configurations
@@ -559,8 +559,8 @@ int core(int argc,char** argv)
       double *prop_ud   = new double[XYZTnodeSites * 3*4*3*4 * 2];
 
       // loop over nT
-//      for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
-      for(int iT_noise_src_pos=2;iT_noise_src_pos<3;iT_noise_src_pos+=15){
+      for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
+//      for(int iT_noise_src_pos=7;iT_noise_src_pos<8;iT_noise_src_pos+=15){
 
         vout.general("\n\n ++++++ NOISE num %2d, from time slice %2d\n",
                   i_noise, iT_noise_src_pos);
@@ -593,14 +593,14 @@ int core(int argc,char** argv)
     //---------------------------------------------------------------------
 
 //    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=2;iT_src_pos<3;iT_src_pos+=4){
+    for(int iT_src_pos=2;iT_src_pos<3;iT_src_pos+=14){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
  
       // ========================================
       // solve propagators
-     /*{
+     {
       propagators_solve("WALL ud",
                         fprop_ud, 
                         prop_ud_wall,  
@@ -610,7 +610,7 @@ int core(int argc,char** argv)
                         prop_s_wall,  
                         iT_src_pos, sources->get_wall_ixyz());          
      }
-*/
+
       
       // ========================================
       // set prefix for this particular run

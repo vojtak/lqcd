@@ -33,9 +33,10 @@ class class_two_hadrons : public class_global_wrapper {
 
   void run_GF_pi_sigma_tree(double* correlator);
   void run_GF_pi_sigma_tree_TEST(double* correlator);
+  void run_GF_pi_sigma_tree_NONOISE(double* correlator);
   
   void run_GF_pi_sigma_loop(double* correlator);
-  void run_GF_pi_sigma_loop_TEST(double* correlator);
+  void run_GF_pi_sigma_loop_TEST(double* correlator, int AA, int diag);
 
   // =======================================
   // functions for NBS wave functions

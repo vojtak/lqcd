@@ -30,7 +30,7 @@ void class_sources :: run(){
 
    generate_wall_source();
 
-   generate_noise_source_vector(1);
+   generate_noise_source_vector(1,"11");
    
 }
 
@@ -69,7 +69,7 @@ void class_sources :: generate_wall_source(){
 }
 
 
-void class_sources :: generate_noise_source_vector(int N_noises_in){
+void class_sources :: generate_noise_source_vector(int N_noises_in, string type){
 
    N_noises = N_noises_in;
    
@@ -80,12 +80,20 @@ void class_sources :: generate_noise_source_vector(int N_noises_in){
    for(int n=0; n<N_noises;n++){
 
      if(MPI_rank==0){
-       printf(" ++++++ generating noise source # %2d\n",n);
+       printf(" ++++++ generating %s noise source # %2d\n",type.c_str(),n);
      }
      MPI_Barrier(MPI_COMM_WORLD);
-   
-     generate_noise_ixyz ( noise_sources_vector+2*n*XYZnodeSites );
-   
+
+     if(type=="U(1)"){   
+       generate_noise_ixyz_U1 ( noise_sources_vector+2*n*XYZnodeSites );
+     }
+     else if(type=="Z(4)"){
+       generate_noise_ixyz_Z4 ( noise_sources_vector+2*n*XYZnodeSites );     
+     }
+     else{
+       printf("ERROR - unknown noise type");
+       abort();
+     }
    }
 
    double re_av=0.0; ////////////////////////////////////////////debug
@@ -95,9 +103,9 @@ void class_sources :: generate_noise_source_vector(int N_noises_in){
      im_av+=noise_sources_vector[2*i+1];
    }
 
-   //printf("\n MPI %2i, average = %1.16e + I %1.16e\n", 
-   //       MPI_rank, re_av/XYZnodeSites/N_noises, im_av/XYZnodeSites/N_noises);
-   //MPI_Barrier(MPI_COMM_WORLD);
+   printf("\n MPI %2i, average = %1.16e + I %1.16e\n", 
+          MPI_rank, re_av/XYZnodeSites/N_noises, im_av/XYZnodeSites/N_noises);
+   MPI_Barrier(MPI_COMM_WORLD);
    
 
 }
@@ -177,7 +185,7 @@ void class_sources :: generate_wall_ixyz(double* wall){
 }
 
 
-void class_sources :: generate_noise_ixyz(double* noise){
+void class_sources :: generate_noise_ixyz_U1(double* noise){
   
   if(TnodeCoor==0){ 
     for(int i=0;i<XYZnodeSites;i++){
@@ -185,6 +193,56 @@ void class_sources :: generate_noise_ixyz(double* noise){
       double rand_num=2*PI*RanGen.Random();
       noise[2*i]=cos(rand_num);
       noise[2*i+1]= sin(rand_num);
+    }
+  }
+
+
+  for(int n_x=0; n_x<Xnodes;n_x++){
+    for(int n_y=0; n_y<Ynodes;n_y++){
+      for(int n_z=0; n_z<Znodes;n_z++){
+
+        for(int n_t=1;n_t<Tnodes;n_t++){
+          
+          int rank_from;
+          rank_from = rank_from_coor(n_x,n_y,n_z, 0 );
+          int rank_to;
+          rank_to   = rank_from_coor(n_x,n_y,n_z,n_t);
+
+          if(MPI_rank==rank_from){
+            MPI_Send(noise,
+                     2*XYZnodeSites,MPI_DOUBLE,
+                     rank_to,1*n_t+100*n_z+10000*n_y+1000000*n_x,
+                     MPI_COMM_WORLD);
+          }
+          
+          MPI_Status *status;
+          if(MPI_rank==rank_to){
+            MPI_Recv(noise,
+                     2*XYZnodeSites,MPI_DOUBLE,
+                     rank_from,1*n_t+100*n_z+10000*n_y+1000000*n_x,
+                     MPI_COMM_WORLD,status);
+          }
+          
+
+        }
+  
+      }  
+    }  
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+
+}
+
+
+void class_sources :: generate_noise_ixyz_Z4(double* noise){
+  
+  COMPLEX nums[4]={1.0,-1.0,COMPLEX_I,-COMPLEX_I};
+  
+  if(TnodeCoor==0){ 
+    for(int i=0;i<XYZnodeSites;i++){
+
+      int rand_num=RanGen.IRandom(0,3);
+      ((COMPLEX*)noise)[i]=nums[rand_num];
     }
   }
 
