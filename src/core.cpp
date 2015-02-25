@@ -510,8 +510,8 @@ int core(int argc,char** argv)
       GaugeFixing_Coulomb *gauge_fixing = new GaugeFixing_Coulomb(rand);        
       gauge_fixing->set_parameters(params_gauge_fixing);
       
-      //gauge_fixing->fix(*U_fixed,*U);
-      *U_fixed=*U;
+      gauge_fixing->fix(*U_fixed,*U);
+      //*U_fixed=*U;
     }
 
     // ========================================
