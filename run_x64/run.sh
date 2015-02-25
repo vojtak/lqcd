@@ -16,4 +16,4 @@ mpirun -np 2 \
       -quark_s s.yaml \
       -f ./in.conf_list	
 
-
+cp -r results ~/Dropbox/misc
