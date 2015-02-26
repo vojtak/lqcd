@@ -7,8 +7,6 @@ mkdir results
 
 export OMP_NUM_THREADS=4
 
-#export PROFILEDIR=profile
-#mkdir profile
 
 mpirun -np 2 \
       ../build/V_LQCD.x \
