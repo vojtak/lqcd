@@ -465,7 +465,6 @@ int core(int argc,char** argv)
   class_sources *sources = new class_sources();
  
   sources->generate_wall_source();
-  sources->generate_point_source(4,4,4);
   sources->generate_noise_source_vector(N_noises,"Z(4)");
 
   //---------------------------------------------------------------------
@@ -593,8 +592,8 @@ int core(int argc,char** argv)
     // loop w.r. to source positions
     //---------------------------------------------------------------------
 
-//    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=0;iT_src_pos<3;iT_src_pos+=14){
+    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
+//    for(int iT_src_pos=2;iT_src_pos<3;iT_src_pos+=14){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
