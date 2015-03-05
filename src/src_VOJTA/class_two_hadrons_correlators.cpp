@@ -128,6 +128,7 @@ void class_two_hadrons::run_GF(string hadron_names){
     MPI_Barrier(MPI_COMM_WORLD);
 
     
+
     if(MPI_rank==0){
       printf("       ++++++ run_GF : the LOOP part  NN    begin %s\n",
              LocalTime().c_str());
@@ -143,12 +144,13 @@ void class_two_hadrons::run_GF(string hadron_names){
              LocalTime().c_str());
     }
     MPI_Barrier(MPI_COMM_WORLD);
+*/
 
     //for(int i=0;i<2*Tsites;i++){
     //  correlator[i]=correlator_tree[i]+correlator_loop[i];    
     //}
     //corr_print(correlator          , hadron_names             );
-*/
+
   }
   else{
   
@@ -326,6 +328,7 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
   COMPLEX* Prop_noise_full    = (COMPLEX*)prop_noise     ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
 
 
+
   double correlator_local[2*Tsites];
   memset(correlator_local,0,sizeof(correlator_local));
   
@@ -415,7 +418,8 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
             COMPLEX sum_X_ixyz = COMPLEX_ZERO;
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
             
-              sum_X_ixyz+=1.5* Conj(Noise[X_ixyz]) *
+
+              sum_X_ixyz+=1.5* Conj(Noise[X_ixyz]) * 
                           Prop_s[ prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it)  ]*
                           (                                                               
                             src_ctr_global[ prop_slv_cs_idx(dP, betaP, aP, ALPHA) ]*
@@ -1193,230 +1197,3 @@ void class_two_hadrons::run_GF_pi_sigma_tree_NONOISE(double* correlator){
 #undef back_prop  
 }
 
-
-void class_two_hadrons::run_GF_pi_sigma_loop_NONOISE(double* correlator){
-
-  // complexify propagators 
-  COMPLEX* Prop_ud            = (COMPLEX*)prop_ud        ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
-  COMPLEX* Prop_s             = (COMPLEX*)prop_s         ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
-  COMPLEX* Prop_noise_full    = (COMPLEX*)prop_noise     ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
-
-
-
-  double correlator_local[2*Tsites];
-  memset(correlator_local,0,sizeof(correlator_local));
-  
-  double correlator_global[2*Tsites];
-  memset(correlator_global,0,sizeof(correlator_global));
-
-
-  // calculating source contraction first
-  COMPLEX src_ctr_local[3*4*3*4];
-  memset(src_ctr_local,0,sizeof(src_ctr_local));
-  COMPLEX src_ctr_global[3*4*3*4];
-  memset(src_ctr_global,0,sizeof(src_ctr_global));
-
-    
-  int iT_src_pos=(iT_src+100*Tsites) % Tsites;
-  if (iT_src_pos/TnodeSites == TnodeCoor) {
-
-    int it = iT_src_pos % TnodeSites;
-
-    for(int a=0;a<3;a++){
-    for(int alf=0;alf<4;alf++){
-    for(int aP=0; aP<3;aP++){
-    for(int alfP=0; alfP<4;alfP++){
-      
-      int index=prop_slv_cs_idx(a, alf, aP, alfP);
-      //printf("MPI %i OMP %i ... iT_src %i it %i  .... index %3i .... %i-%i-%i-%i \n", 
-      //        MPI_rank,omp_get_thread_num(), iT_src_pos, it, index ,a ,alf,aP,alfP);
-      COMPLEX sum =COMPLEX_ZERO;
-
-      for(int Z_ixyz = 0;  Z_ixyz < XYZnodeSites; Z_ixyz++){            
-        src_ctr_local[index] += Prop_ud[ prop_slv_idx(a, alf,  aP, alfP,  Z_ixyz,it) ];
-        
-      }
-      src_ctr_local[index] /= XYZsites;
-
-    }}}}
-
-  }
-
-  MPI_Allreduce(src_ctr_local, src_ctr_global, 
-                288, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-  //for(int mpi=0;mpi<2;mpi++){
-  //MPI_Barrier(MPI_COMM_WORLD);
-  //if(MPI_rank==mpi){
-
-  //for(int a=0;a<3;a++){
-  //for(int alf=0;alf<4;alf++){
-  //for(int aP=0; aP<3;aP++){
-  //for(int alfP=0; alfP<4;alfP++){
-  //    
-  //  int index=prop_slv_cs_idx(a, alf, aP, alfP);
-  //  printf("MPI %i  corr_glob %1.16e %1.16e I \tindex %3i .... %i-%i-%i-%i \n", 
-  //        MPI_rank, Real(source_contraction_global[index]),  Imag(source_contraction_global[index]),
-  //        index ,a ,alf,aP,alfP);
-
-  //for(int itt=0;itt<12;itt++){
-  
-  //  COMPLEX summ =COMPLEX_ZERO;
-
-  //  for(int Z_ixyz = 0;  Z_ixyz < XYZnodeSites; Z_ixyz++){            
-  //      COMPLEX num=COMPLEX_ZERO;
-  //      for(int iii=0;iii<N_noises;iii++){
-  //        COMPLEX* src = (COMPLEX*)sources->get_noise_ixyz(iii);
-  //        num+=Prop_noise_full [iii* XYZTnodeSites * 3*4*3*4 +prop_slv_idx(a, alf, aP, alfP,  Z_ixyz,itt) ]*
-  //             Conj(src[Z_ixyz]);
-  //      }
-            
-  //      summ += num; 
-  //    }
-
-  //  printf("nn= %4i MPI %i, it= %2i,  %i-%i-%i-%i  corr_nois sum %1.16e  %1.16e I\n", 
-  //          N_noises, MPI_rank, itt+12*MPI_rank, a ,alf,aP,alfP, Real(summ)/(N_noises*XYZsites),Imag(summ)/(N_noises*XYZsites) );
-  
-  //}
-  //}}}}
-  //}}
-  //MPI_Barrier(MPI_COMM_WORLD);
-  
-  // correlator itself
-  #pragma omp parallel for
-  for(int it = 0; it < TnodeSites; it++){
-
-    //if(MPI_rank==0){
-    //  printf("OMP= %2d   time %2d\t\t\t%s",omp_get_thread_num(),it, LocalTime().c_str());
-    //}
-
-    // noise summation
-    
-//      COMPLEX* Noise      = (COMPLEX*)sources->get_noise_ixyz(i_noise);
-      COMPLEX* Point      = (COMPLEX*)sources->get_point_ixyz();
-      COMPLEX* Prop_noise = Prop_noise_full;// + i_noise * XYZTnodeSites * 3*4*3*4;
-
-      // free Dirac index summation
-      COMPLEX sum_freeDI = COMPLEX_ZERO;
-      for(int ALPHA = 0; ALPHA < 4; ALPHA++){
-
-        // source summation
-        COMPLEX sum_source = COMPLEX_ZERO;
-        for(int dP      = 0; dP     < 3; dP++){
-        for(int alphaP  = 0; alphaP < 4; alphaP++){
-          int betaP=IGM(alphaP,5);
-        for(int colorP  = 0; colorP < 6; colorP++){
-          int aP    =Eps(0,colorP);
-          int bP    =Eps(1,colorP);
-          int cP    =Eps(2,colorP);          
-        for(int gammaP  = 0; gammaP < 4; gammaP++){
-          int deltaP = icg5[gammaP]; 
-          
-    //if(MPI_rank==0){
-    //  printf("OMP= %d\ttime %d\t noise %d\t dirac %d\t source %d %d %d %d\n",omp_get_thread_num(),it, i_noise,ALPHA, dP,alphaP,colorP,gammaP);
-    //}
-
-          
-          
-          // sink summation
-          COMPLEX sum_sink = COMPLEX_ZERO;
-          for(int d       = 0; d      < 3; d ++){
-          for(int alpha   = 0; alpha  < 4; alpha++){
-            int beta=IGM(alpha,5);
-          for(int color   = 0; color  < 6; color++){
-            int a    =Eps(0,color);
-            int b    =Eps(1,color);
-            int c    =Eps(2,color);          
-          for(int gamma   = 0; gamma  < 4; gamma++){
-            int delta = icg5[gamma]; 
-
-    //if(MPI_rank==0){
-    //  printf("                     sink %d %d %d %d\n", d,alpha,color,gamma);
-    //}
-
-            //sum X_ixyz
-            COMPLEX sum_X_ixyz = COMPLEX_ZERO;
-            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
-            
-              sum_X_ixyz+=1.5* Point[X_ixyz] * 
-                          Prop_s[ prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it)  ]*
-                          (                                                               
-                            src_ctr_global[ prop_slv_cs_idx(dP, betaP, aP, ALPHA) ]*
-                            ( -
-                              Prop_noise    [ prop_slv_idx   (b, gamma, d, alpha,  X_ixyz,it) ]*
-                              (
-                                Prop_ud       [ prop_slv_idx   (a, ALPHA, dP, alphaP,  X_ixyz,it) ]*  //-3/2 L7
-                                Prop_ud       [ prop_slv_idx   (d, beta , bP, gammaP,  X_ixyz,it) ]
-                                +
-                                Prop_ud       [ prop_slv_idx   (d, beta , dP, alphaP,  X_ixyz,it) ]*  //+3/2 L8
-                                Prop_ud       [ prop_slv_idx   (a, ALPHA, bP, gammaP,  X_ixyz,it) ]                                
-                              )
-                              +
-                              Prop_noise    [ prop_slv_idx   (a, ALPHA, d, alpha,  X_ixyz,it) ]*
-                              (
-                                Prop_ud       [ prop_slv_idx   (b, gamma, dP, alphaP,  X_ixyz,it) ]*  //-3/2 L9
-                                Prop_ud       [ prop_slv_idx   (d, beta , bP, gammaP,  X_ixyz,it) ]
-                                +
-                                Prop_ud       [ prop_slv_idx   (d, beta , dP, alphaP,  X_ixyz,it) ]*  //+3/2 L10
-                                Prop_ud       [ prop_slv_idx   (b, gamma, bP, gammaP,  X_ixyz,it) ]                                
-                              )
-                            )
-                            +
-                            src_ctr_global[ prop_slv_cs_idx(dP, betaP, bP, gammaP) ]*
-                            ( +
-                              Prop_noise    [ prop_slv_idx   (b, gamma, d, alpha,  X_ixyz,it) ]*
-                              (
-                                Prop_ud       [ prop_slv_idx   (a, ALPHA, dP, alphaP,  X_ixyz,it) ]*  //-3/2 L13
-                                Prop_ud       [ prop_slv_idx   (d, beta , aP, ALPHA ,  X_ixyz,it) ]
-                                +
-                                Prop_ud       [ prop_slv_idx   (d, beta , dP, alphaP,  X_ixyz,it) ]*  //+3/2 L14
-                                Prop_ud       [ prop_slv_idx   (a, ALPHA, aP, ALPHA ,  X_ixyz,it) ]                                
-                              )
-                              -
-                              Prop_noise    [ prop_slv_idx   (a, ALPHA, d, alpha,  X_ixyz,it) ]*
-                              (
-                                Prop_ud       [ prop_slv_idx   (b, gamma, dP, alphaP,  X_ixyz,it) ]*  //-3/2 L15
-                                Prop_ud       [ prop_slv_idx   (d, beta , aP, ALPHA ,  X_ixyz,it) ]
-                                +
-                                Prop_ud       [ prop_slv_idx   (d, beta , dP, alphaP,  X_ixyz,it) ]*  //+3/2 L16
-                                Prop_ud       [ prop_slv_idx   (b, gamma, aP, ALPHA ,  X_ixyz,it) ]                                
-                              )
-                            )
-                          )
-                          ;
-            }//X_ixyz
-           
-
-            sum_sink += sum_X_ixyz * 
-                        ZGM(alpha,5) * Eps(3,color) * zcg5[gamma];
-          }}}}//sink
-
-
-          sum_source += sum_sink *
-                        ZGM(alphaP,5) * Eps(3,colorP) * zcg5[gammaP];
-                        
-        }}}}//source
-      
-        sum_freeDI += 0.5* sum_source;
-      }//ALPHA
-    
-
-
-//    printf("MPI %i OMP %i ... it %i sum %1.16e %1.16e I\n", 
-//           MPI_rank,omp_get_thread_num(), it,Real(sum_ixyz),Imag(sum_ixyz));
- 
-  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor] = sum_freeDI;
-    
-  } // it, end of omp parallel
-
-  // reduce from all MPI processes
-  MPI_Barrier(MPI_COMM_WORLD);
-  MPI_Reduce(correlator_local, correlator_global, 2*Tsites, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  
-  // output correlator
-  for(int it = 0; it < Tsites; it++){
-    ((COMPLEX*)correlator)[it]=((COMPLEX*)correlator_global)[it];
-  }
-  
-
-}
