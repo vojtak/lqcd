@@ -45,6 +45,11 @@ class class_two_hadrons : public class_global_wrapper {
   
   void run_all_NBSwf();
 
+  void run_NBSwf(string hadron_names);
+
+  void run_NBSwf_pi_sigma_tree(double* NBS_wave);
+  void run_NBSwf_pi_sigma_loop(double* NBS_wave);
+
   private:
 
   // =======================================

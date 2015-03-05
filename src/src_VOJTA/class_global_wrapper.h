@@ -63,7 +63,7 @@ class class_global_wrapper{
   #define PI  3.1415926535897932385
 
   // MPI parameters
-  int MPI_flag, MPI_size, MPI_rank;       
+  int MPI_flag, MPI_size, MPI_rank;
 
 
   // name of the gauge configuration and prefix for measurements

@@ -96,7 +96,6 @@ using Bridge::vout;
 
 
 /* -------------- VOJTA code */
-#include "X_misc_V.h"
 
 /* local from HAL */
 #include "COMPLEX.h"
@@ -424,7 +423,7 @@ int core(int argc,char** argv)
   // ++++++++++++++++++++++ VOJTA PART BEGINS
 
   int noises[4] = {1,4,10,20};
-  for(int i=0;i<4;i++){
+  for(int i=0;i<1;i++){
 
   vout.general("\n\n\t ======================================");
   vout.general("\n\t ============== NUMBER OF NOISES = %2d ",noises[i]);
@@ -466,7 +465,7 @@ int core(int argc,char** argv)
  
   sources->generate_wall_source();
   sources->generate_point_source(4,4,4);
-  sources->generate_noise_source_vector(N_noises,"Z(4)");
+  sources->generate_noise_source_vector(N_noises,"U(1)");
 
   //---------------------------------------------------------------------
   // main loop w.r. to gauge configurations
@@ -503,16 +502,15 @@ int core(int argc,char** argv)
     }
       
     // ---- Vojta
-    // gauge fixing
-      
+    // gauge fixing    
     {
       RandomNumbers_Mseries *rand = new RandomNumbers_Mseries(1100);
       
       GaugeFixing_Coulomb *gauge_fixing = new GaugeFixing_Coulomb(rand);        
       gauge_fixing->set_parameters(params_gauge_fixing);
       
-      gauge_fixing->fix(*U_fixed,*U);
-      //*U_fixed=*U;
+      //gauge_fixing->fix(*U_fixed,*U);
+      *U_fixed=*U;
     }
 
     // ========================================
@@ -552,7 +550,6 @@ int core(int argc,char** argv)
     // ========================================
     // calculation of noise propagators 
 
-
     for(int i_noise=0; i_noise<N_noises; i_noise++){
 
 
@@ -560,8 +557,8 @@ int core(int argc,char** argv)
       double *prop_ud   = new double[XYZTnodeSites * 3*4*3*4 * 2];
 
       // loop over nT
-      for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
-//      for(int iT_noise_src_pos=7;iT_noise_src_pos<8;iT_noise_src_pos+=15){
+//      for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
+      for(int iT_noise_src_pos=7;iT_noise_src_pos<8;iT_noise_src_pos+=15){
 
         vout.general("\n\n ++++++ NOISE num %2d, from time slice %2d\n",
                   i_noise, iT_noise_src_pos);
@@ -587,14 +584,12 @@ int core(int argc,char** argv)
     } //i_noise 
 
 
-
-
     //---------------------------------------------------------------------
     // loop w.r. to source positions
     //---------------------------------------------------------------------
 
 //    for(int iT_src_pos=0;iT_src_pos<CommonParameters::Lt();iT_src_pos++){
-    for(int iT_src_pos=0;iT_src_pos<3;iT_src_pos+=14){
+    for(int iT_src_pos=2;iT_src_pos<3;iT_src_pos+=14){
 
       vout.general("\n\t@@@ calculation for source position at %2d start: \t%s @@@\n\n",
                    iT_src_pos, LocalTime());
@@ -619,30 +614,32 @@ int core(int argc,char** argv)
       snprintf(pr,sizeof(pr),"nn_%02d_",N_noises); 
       //snprintf(pr,sizeof(pr),""); 
 
+
       // ========================================
       //initialize single hadron class and set all the parameters
-
+      
       class_hadron Hadron_wall(prop_ud_wall,prop_s_wall);
       
       Hadron_wall.set_base_name(base);
-      Hadron_wall.set_prefix_name(pr);
+	  Hadron_wall.set_prefix_name(pr);
       Hadron_wall.set_source_position(iT_src_pos);
-
+      
+	  
       // ========================================
       //initialize two-hadron class and set all the parameters
+      
       class_two_hadrons Two_hadrons(prop_ud_wall,prop_s_wall, prop_noise,sources);
 
       Two_hadrons.set_base_name(base);
       Two_hadrons.set_prefix_name(pr);
       Two_hadrons.set_source_position(iT_src_pos);
       Two_hadrons.set_noise_number(N_noises);
-
+      
 
       // ========================================
       // run all green functions 
 
-
-      //Hadron_wall.run_all_GF();
+      Hadron_wall.run_all_GF();
 
       Two_hadrons.run_all_GF();
 
@@ -691,9 +688,9 @@ int core(int argc,char** argv)
 }
 
 //---------------------------------------------------------------------
-/**
- * @brief propagator converter: bridge++ to als
- */
+//
+// * @brief propagator converter: bridge++ to als
+// 
 //---------------------------------------------------------------------
 
 static void converter(std::valarray<Field_F>& sq, double prop[])
@@ -724,9 +721,9 @@ static void converter(std::valarray<Field_F>& sq, double prop[])
 
 
 //---------------------------------------------------------------------
-/**
- calculating propagators from a given source --- almost all copied from template
- */
+//
+// calculating propagators from a given source --- almost all copied from template
+//
 //---------------------------------------------------------------------
 
 static void propagators_solve(string label,
@@ -792,9 +789,9 @@ static void propagators_solve(string label,
 
 
 //---------------------------------------------------------------------
-/**
- selecting only t=iT slice of the propagator 
- */
+//
+// selecting only t=iT slice of the propagator 
+//
 //---------------------------------------------------------------------
 
 static void iT_slice_selection(double *prop_final,

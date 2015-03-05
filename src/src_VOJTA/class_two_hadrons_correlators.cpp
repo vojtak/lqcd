@@ -23,11 +23,13 @@
 
 using namespace HAL_idx;
 
+
 void class_two_hadrons::run_all_GF(){
 
   run_GF("pion-sigma");
 
 }
+
 
 // ================================================================================================
 // wrapper to run all correlators
@@ -74,7 +76,7 @@ void class_two_hadrons::run_GF(string hadron_names){
     }
     MPI_Barrier(MPI_COMM_WORLD);
     }}
-    
+*/    
     if(MPI_rank==0){
       printf("       ++++++ run_GF : the TREE part        begin %s\n",
              LocalTime().c_str());
@@ -91,7 +93,7 @@ void class_two_hadrons::run_GF(string hadron_names){
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-
+/*
     if(MPI_rank==0){
       printf("       ++++++ run_GF : the TREE part NN     begin %s\n",
              LocalTime().c_str());
@@ -107,7 +109,8 @@ void class_two_hadrons::run_GF(string hadron_names){
              LocalTime().c_str());
     }
     MPI_Barrier(MPI_COMM_WORLD);
-*/
+
+
     if(MPI_rank==0){
       printf("       ++++++ run_GF : the LOOP part        begin %s\n",
              LocalTime().c_str());
@@ -117,14 +120,14 @@ void class_two_hadrons::run_GF(string hadron_names){
     double correlator_loop[2*Tsites];
     memset(correlator_loop,0,sizeof(correlator_loop));  
     run_GF_pi_sigma_loop(correlator_loop);
-    corr_print(correlator_loop     , hadron_names+"_loop"     );
+    GF_print(correlator_loop     , hadron_names+"_loop"     );
     if(MPI_rank==0){
       printf("       ++++++ run_GF :                        end %s\n", 
              LocalTime().c_str());
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-/*    
+    
     if(MPI_rank==0){
       printf("       ++++++ run_GF : the LOOP part  NN    begin %s\n",
              LocalTime().c_str());
@@ -158,11 +161,11 @@ void class_two_hadrons::run_GF(string hadron_names){
   
 };
 
+
 // ================================================================================================
 // calculate pi-sigma propagator --- the tree part 
 //       formulas in notes 
 //
-
 void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
 
   // complexify propagators 
@@ -191,7 +194,7 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
     
       COMPLEX* Noise      = (COMPLEX*)sources->get_noise_ixyz(i_noise);
 
-      // calculating source contraction first
+      // calculating backward propagator contraction first
       COMPLEX back_prop_contraction[3*4*3*4];
       memset(back_prop_contraction,0,sizeof(back_prop_contraction));
 
@@ -212,7 +215,7 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
 
       // free Dirac index summation
       COMPLEX sum_freeDI = COMPLEX_ZERO;
-      for(int ALPHA = 0; ALPHA < 4; ALPHA++){
+      for(int ALPHA = 0; ALPHA < 2; ALPHA++){
 
 
         // source summation
@@ -311,7 +314,6 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
 }
 
 
-
 // ================================================================================================
 // calculate pi-sigma propagator --- the loop part 
 //       formulas in notes 
@@ -381,7 +383,7 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
 
       // free Dirac index summation
       COMPLEX sum_freeDI = COMPLEX_ZERO;
-      for(int ALPHA = 0; ALPHA < 4; ALPHA++){
+      for(int ALPHA = 0; ALPHA < 2; ALPHA++){
 
         // source summation
         COMPLEX sum_source = COMPLEX_ZERO;
@@ -499,8 +501,7 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
 // ================================================================================================
 // print the correlator
 //
-void class_two_hadrons::corr_print(double *correlator, string hadron_names)
-{
+void class_two_hadrons::corr_print(double *correlator, string hadron_names){
 
   MPI_Barrier(MPI_COMM_WORLD);
   
@@ -548,9 +549,10 @@ void class_two_hadrons::corr_print(double *correlator, string hadron_names)
 
 
 
-//----------------------------------
-// test stuff
 
+//****************###############**************#################*****************###############***
+//****************###############**************#################*****************###############***
+// test stuff
 
 void class_two_hadrons::run_GF_pi_sigma_tree_TEST(double* correlator){
 
@@ -711,7 +713,6 @@ void class_two_hadrons::run_GF_pi_sigma_tree_TEST(double* correlator){
   
 #undef back_prop  
 }
-
 
 
 void class_two_hadrons::run_GF_pi_sigma_loop_TEST(double* correlator, int AA, int diag){
@@ -1038,7 +1039,6 @@ void class_two_hadrons::run_GF_pi_sigma_loop_TEST(double* correlator, int AA, in
 }
 
 
-
 void class_two_hadrons::run_GF_pi_sigma_tree_NONOISE(double* correlator){
 
   // complexify propagators 
@@ -1192,7 +1192,6 @@ void class_two_hadrons::run_GF_pi_sigma_tree_NONOISE(double* correlator){
   
 #undef back_prop  
 }
-
 
 
 void class_two_hadrons::run_GF_pi_sigma_loop_NONOISE(double* correlator){

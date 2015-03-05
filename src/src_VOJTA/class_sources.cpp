@@ -113,7 +113,6 @@ void class_sources :: generate_noise_source_vector(int N_noises_in, string type)
 
 /////////////////////////////////////////////////////////////////
 
-
 double * class_sources :: get_point_ixyz(){
 
   return point_source;
@@ -136,7 +135,6 @@ double * class_sources :: get_noise_ixyz(int noise_num){
 
 
 /////////////////////////////////////////////////////////////////
-
 
 void class_sources :: generate_point_ixyz(double *point, int X_coor, int Y_coor, int Z_coor){
 
@@ -201,10 +199,11 @@ void class_sources :: generate_noise_ixyz_U1(double* noise){
     for(int n_y=0; n_y<Ynodes;n_y++){
       for(int n_z=0; n_z<Znodes;n_z++){
 
+        int rank_from;
+        rank_from = rank_from_coor(n_x,n_y,n_z, 0 );
+
         for(int n_t=1;n_t<Tnodes;n_t++){
           
-          int rank_from;
-          rank_from = rank_from_coor(n_x,n_y,n_z, 0 );
           int rank_to;
           rank_to   = rank_from_coor(n_x,n_y,n_z,n_t);
 
@@ -251,10 +250,11 @@ void class_sources :: generate_noise_ixyz_Z4(double* noise){
     for(int n_y=0; n_y<Ynodes;n_y++){
       for(int n_z=0; n_z<Znodes;n_z++){
 
+        int rank_from;
+        rank_from = rank_from_coor(n_x,n_y,n_z, 0 );
+
         for(int n_t=1;n_t<Tnodes;n_t++){
           
-          int rank_from;
-          rank_from = rank_from_coor(n_x,n_y,n_z, 0 );
           int rank_to;
           rank_to   = rank_from_coor(n_x,n_y,n_z,n_t);
 
@@ -285,7 +285,6 @@ void class_sources :: generate_noise_ixyz_Z4(double* noise){
 
 
 /////////////////////////////////////////////////////////////////
-
 
 void class_sources :: print(){
 

@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+
 /* standard parralelization */
 #include <mpi.h>
 #include <omp.h>
@@ -19,10 +20,9 @@
 
 /* local from HAL */
 #include "COMPLEX.h"
-
-/* local from VOJTA */
 #include "HAL_indexes.h"
 
+/* local from VOJTA */
 #include "class_global_wrapper.h"
 
 
