@@ -34,11 +34,10 @@ void class_two_hadrons::run_all_NBSwf(){
 //
 void class_two_hadrons::run_NBSwf(string hadron_names){
 
-  double correlator[2*Tsites];
-  memset(correlator,0,sizeof(correlator));
+  time=
 
   if(MPI_rank==0){
-    printf(" ++++++ run_NBSwf : calculate %s NBS wave function        %s\n",
+    printf(" ++++++ run_NBSwf : calculate %s NBS wave function  at time T=%2d      %s\n",
          hadron_names.c_str(), LocalTime().c_str());
   }
   MPI_Barrier(MPI_COMM_WORLD);
@@ -55,11 +54,15 @@ void class_two_hadrons::run_NBSwf(string hadron_names){
              LocalTime().c_str());
     }
     MPI_Barrier(MPI_COMM_WORLD);
+
     
-    double correlator_tree[2*Tsites];
-    memset(correlator_tree,0,sizeof(correlator_tree));  
-    run_GF_pi_sigma_tree(correlator_tree);
-    corr_print(correlator_tree     , hadron_names+"_tree"     );
+    
+    double wave_function_tree[2*XYZnodeSites];
+    memset(wave_function_tree,0,sizeof(wave_function_tree));  
+
+    run_GF_pi_sigma_tree(wave_function_tree);
+    corr_print(wave_function_tree    , hadron_names+"_tree"     );
+
     if(MPI_rank==0){
       printf("       ++++++ run_NBSwf :                        end %s\n", 
              LocalTime().c_str());
@@ -73,7 +76,7 @@ void class_two_hadrons::run_NBSwf(string hadron_names){
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-    double correlator_loop[2*Tsites];
+    double correlator_loop[2*XYZnodeSites];
     memset(correlator_loop,0,sizeof(correlator_loop));  
     run_GF_pi_sigma_loop(correlator_loop);
     corr_print(correlator_loop     , hadron_names+"_loop"     );
@@ -436,7 +439,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator){
 // ================================================================================================
 // print the NBS wave function
 //
-void class_two_hadrons::NBSwf_print(double *correlator, string hadron_names)
+void class_two_hadrons::NBSwf_print(double *wave_function, string hadron_names)
 {
   
   for(int it=0; it<TnodeSites;it++){
@@ -467,16 +470,22 @@ void class_two_hadrons::NBSwf_print(double *correlator, string hadron_names)
     fout.precision(16);
 
 
-    // print correlator
-    for(int it = 0; it < Tsites; it++){
-      int iT2 = (it + iT_src + 100*Tsites) % Tsites;
-      //int iT2 = it;
+    // print NBS wave function
+    for(int index = 0; index < XYZnodeSites; index++){
+
+      int xcoor =  index % XnodeSites                 +  XnodeSites*XnodeCoor;
+      int ycoor =  (index / XnodeSites) % YnodeSites  +  YnodeSites*YnodeCoor;
+      int zcoor =  index / (XnodeSites * YnodeSites)  +  ZnodeSites*ZnodeCoor;
 
       char line[1000];
-      snprintf(line, sizeof(line), "%4d\t%1.16e %1.16e\n",
-               it, correlator[2* iT2], correlator[2* iT2+1]);
+      snprintf(line, sizeof(line), "%3d,%3d,%3d,%7d, %1.16e %1.16e\n",
+               xcoor, ycoor, zcoor, 
+               xcoor*xcoor+ycoor*ycoor+zcoor*zcoor,
+               wave_function[2* index], wave_function[2* index+1]);
       fout << line;
     }
+
+
 
     fout.close();
 

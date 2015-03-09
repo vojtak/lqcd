@@ -26,6 +26,7 @@ using namespace HAL_idx;
 
 void class_two_hadrons::run_all_GF(){
 
+  
   run_GF("pion-sigma");
 
 }
@@ -76,7 +77,7 @@ void class_two_hadrons::run_GF(string hadron_names){
     }
     MPI_Barrier(MPI_COMM_WORLD);
     }}
-*/    
+    
     if(MPI_rank==0){
       printf("       ++++++ run_GF : the TREE part        begin %s\n",
              LocalTime().c_str());
@@ -92,8 +93,8 @@ void class_two_hadrons::run_GF(string hadron_names){
              LocalTime().c_str());
     }
     MPI_Barrier(MPI_COMM_WORLD);
+*/
 
-/*
     if(MPI_rank==0){
       printf("       ++++++ run_GF : the TREE part NN     begin %s\n",
              LocalTime().c_str());
@@ -101,7 +102,9 @@ void class_two_hadrons::run_GF(string hadron_names){
     MPI_Barrier(MPI_COMM_WORLD);
     
     double correlator_tree_NONOISE[2*Tsites];
-    memset(correlator_tree_NONOISE,0,sizeof(correlator_tree_NONOISE));  
+    memset(correlator_tree_NONOISE,0,sizeof(correlator_tree_NONOISE)); 
+    NBSwf_print(correlator_tree_NONOISE, "pi-sigma_tree_NONOISE");
+ 
     run_GF_pi_sigma_tree_NONOISE(correlator_tree_NONOISE);
     corr_print(correlator_tree_NONOISE, hadron_names+"_tree_NONOISE");
     if(MPI_rank==0){
@@ -110,7 +113,7 @@ void class_two_hadrons::run_GF(string hadron_names){
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-
+/*
     if(MPI_rank==0){
       printf("       ++++++ run_GF : the LOOP part        begin %s\n",
              LocalTime().c_str());
