@@ -28,7 +28,7 @@ using namespace HAL_idx;
 
 void class_two_hadrons::run_all_NBSwf(){
 
-  run_GF("pion-sigma");
+  run_NBSwf(“pion-sigma");
 
 }
 
