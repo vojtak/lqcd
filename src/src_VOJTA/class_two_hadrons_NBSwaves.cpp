@@ -20,6 +20,9 @@
 #include "class_sources.h"
 #include "class_two_hadrons.h"
 
+/* local from EXTERNAL */
+#include "fft3d.h"
+
 
 using namespace HAL_idx;
 
@@ -34,19 +37,22 @@ void class_two_hadrons::run_all_NBSwf(){
 //
 void class_two_hadrons::run_NBSwf(string hadron_names){
 
-  time=
 
+  double wave_function[2*XYZnodeSites];
+  memset(wave_function,0,sizeof(wave_function));  
+  int time =6; 
+  
   if(MPI_rank==0){
-    printf(" ++++++ run_NBSwf : calculate %s NBS wave function  at time T=%2d      %s\n",
-         hadron_names.c_str(), LocalTime().c_str());
+	printf(" ++++++ run_NBSwf : calculate %s NBS wave function  at time T=%2d      %s\n",
+	       hadron_names.c_str(), time, LocalTime().c_str());
   }
   MPI_Barrier(MPI_COMM_WORLD);
-
 
   // ==================================
   // pion-sigma two baryon system
     
   if(hadron_names=="pion-sigma"){
+
 
     
     if(MPI_rank==0){
@@ -55,13 +61,12 @@ void class_two_hadrons::run_NBSwf(string hadron_names){
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-    
-    
+        
     double wave_function_tree[2*XYZnodeSites];
     memset(wave_function_tree,0,sizeof(wave_function_tree));  
 
-    run_GF_pi_sigma_tree(wave_function_tree);
-    corr_print(wave_function_tree    , hadron_names+"_tree"     );
+    run_NBSwf_pi_sigma_tree(wave_function_tree, time);
+    NBSwf_print(wave_function_tree    , hadron_names+"_tree"    , time );
 
     if(MPI_rank==0){
       printf("       ++++++ run_NBSwf :                        end %s\n", 
@@ -69,23 +74,28 @@ void class_two_hadrons::run_NBSwf(string hadron_names){
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-
+	/*
     if(MPI_rank==0){
       printf("       ++++++ run_NBSwf : the LOOP part        begin %s\n",
              LocalTime().c_str());
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-    double correlator_loop[2*XYZnodeSites];
-    memset(correlator_loop,0,sizeof(correlator_loop));  
-    run_GF_pi_sigma_loop(correlator_loop);
-    corr_print(correlator_loop     , hadron_names+"_loop"     );
+    double wave_function_loop[2*XYZnodeSites];
+    memset(wave_function_loop,0,sizeof(wave_function_loop));  
+    run_NBSwf_pi_sigma_loop(wave_function_loop, time);
+    NBSwf_print(wave_function_loop     , hadron_names+"_loop"   , time  );
     if(MPI_rank==0){
       printf("       ++++++ run_NBSwf :                        end %s\n", 
              LocalTime().c_str());
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
+    for(int i=0;i<2*XYZnodeSites;i++){
+	  wave_function[i]=wave_function_tree[i]+wave_function_loop[i];    
+    }
+    NBSwf_print(wave_function          , hadron_names , time            );
+  */
   }
   else{
   
@@ -93,8 +103,6 @@ void class_two_hadrons::run_NBSwf(string hadron_names){
     abort();
   }
 
-
-  //corr_print(correlator, hadron_names);
   
 };
 
@@ -103,8 +111,11 @@ void class_two_hadrons::run_NBSwf(string hadron_names){
 // calculate pi-sigma NBS wave function --- the tree part 
 //       formulas in notes 
 //
-void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* correlator){
+void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time){
 
+  // set wf to zero
+  memset(wave_function,0,sizeof(wave_function));
+  
   // complexify propagators 
   COMPLEX* Prop_ud            = (COMPLEX*)prop_ud        ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
   COMPLEX* Prop_s             = (COMPLEX*)prop_s         ;//+ prop_slv_idx(0,0,0,0,ixyz,it);
@@ -113,17 +124,12 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* correlator){
         ( ZGM(a,5) * ZGM (IGM(ap,5),5) *                                 \
           Conj(prop[ prop_slv_idx(c,IGM(a,5),cp,IGM(ap,5) ,ixyz,it) ]) )
 
-  double correlator_local[2*Tsites];
-  memset(correlator_local,0,sizeof(correlator_local));
-  
-  double correlator_global[2*Tsites];
-  memset(correlator_global,0,sizeof(correlator_global));
-
-
-  
+			  
+			  			  
+  int it = (time + 100*Tsites)%Tsites; 			 
   // correlator itself
-  #pragma omp parallel for
-  for(int it = 0; it < TnodeSites; it++){
+
+  if( it/TnodeSites == TnodeCoor ){
 
     // noise summation
     COMPLEX sum_N = COMPLEX_ZERO;
@@ -181,71 +187,160 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* correlator){
             int delta = icg5[gamma]; 
 
 
-            //sum X_ixyz
-            COMPLEX sum_X_ixyz = COMPLEX_ZERO;
+            double WF_mom_space[2*XYZnodeSites];
+	        memset(WF_mom_space,0,sizeof(WF_mom_space));
+			
+            double WF_left[2*XYZnodeSites];
+            double WF_right[2*XYZnodeSites];
+			
+            //-1/2 T1
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
-              sum_X_ixyz+=Conj(Noise[X_ixyz]) * 
-                          Prop_s[ prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ]*
-                          ( -0.5*                                                               //-1/2 T1
-                            Prop_ud[ prop_slv_idx(b, gamma,  dP, alphaP,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(a, ALPHA,  aP, ALPHA ,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(d, beta ,  bP, gammaP,  X_ixyz,it) ]
-                            -0.5*                                                               //-1/2 T2
-                            Prop_ud[ prop_slv_idx(a, ALPHA,  dP, alphaP,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(d, beta ,  aP, ALPHA ,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(b, gamma,  bP, gammaP,  X_ixyz,it) ]
-                            +                                                              //+1 T3
-                            Prop_ud[ prop_slv_idx(d, beta ,  dP, alphaP,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(b, gamma,  aP, ALPHA ,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(a, ALPHA,  bP, gammaP,  X_ixyz,it) ]
-                            -                                                              //+1 T4
-                            Prop_ud[ prop_slv_idx(d, beta ,  dP, alphaP,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(a, ALPHA,  aP, ALPHA ,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(b, gamma,  bP, gammaP,  X_ixyz,it) ]
-                            +0.5*                                                              //-1/2 T5
-                            Prop_ud[ prop_slv_idx(a, ALPHA,  dP, alphaP,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(b, gamma,  aP, ALPHA ,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(d, beta ,  bP, gammaP,  X_ixyz,it) ]
-                            +0.5*                                                              //-1/2 T6
-                            Prop_ud[ prop_slv_idx(b, gamma,  dP, alphaP,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(d, beta ,  aP, ALPHA ,  X_ixyz,it) ]*
-                            Prop_ud[ prop_slv_idx(a, ALPHA,  bP, gammaP,  X_ixyz,it) ]
+              
+			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
+				          Prop_ud[ prop_slv_idx(d, beta ,  bP, gammaP,  X_ixyz,it) ] ;
+
+			  ((COMPLEX*)WF_right)[X_ixyz] =  Prop_ud[ prop_slv_idx(a, ALPHA,  aP, ALPHA ,  X_ixyz,it) ] *
+                          Prop_ud[ prop_slv_idx(b, gamma,  dP, alphaP,  X_ixyz,it) ] *
+                 		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
+            } 
+            
+			FFT3D (WF_left  , FFTW_BACKWARD );
+			FFT3D (WF_right , FFTW_FORWARD  );
+ 
+            for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
+			  WF_mom_space[X_ixyz] += -0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
+                           
+
+            //-1/2 T2
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+              
+			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
+				          Prop_ud[ prop_slv_idx(d, beta ,  aP, ALPHA ,  X_ixyz,it) ] ;
+
+			  ((COMPLEX*)WF_right)[X_ixyz] =  Prop_ud[ prop_slv_idx(a, ALPHA,  dP, alphaP,  X_ixyz,it) ] *
+                          Prop_ud[ prop_slv_idx(b, gamma,  bP, gammaP,  X_ixyz,it) ] *
+                 		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
+            } 
+            
+			FFT3D (WF_left  , FFTW_BACKWARD );
+			FFT3D (WF_right , FFTW_FORWARD  );
+ 
+            for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
+			  WF_mom_space[X_ixyz] += -0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
+
+            //+1 T3
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+              
+			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
+				          Prop_ud[ prop_slv_idx(d, beta ,  dP, alphaP,  X_ixyz,it) ] ;
+
+			  ((COMPLEX*)WF_right)[X_ixyz] =  Prop_ud[ prop_slv_idx(a, ALPHA,  bP, gammaP,  X_ixyz,it) ] *
+                          Prop_ud[ prop_slv_idx(b, gamma,  aP, ALPHA ,  X_ixyz,it) ] *
+                 		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
+            } 
+            
+			FFT3D (WF_left  , FFTW_BACKWARD );
+			FFT3D (WF_right , FFTW_FORWARD  );
+ 
+            for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
+			  WF_mom_space[X_ixyz] +=  WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
+
+
+            //+1 T4
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+              
+			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
+				          Prop_ud[ prop_slv_idx(d, beta ,  dP, alphaP,  X_ixyz,it) ] ;
+
+			  ((COMPLEX*)WF_right)[X_ixyz] =  Prop_ud[ prop_slv_idx(a, ALPHA,  aP, ALPHA ,  X_ixyz,it) ] *
+                          Prop_ud[ prop_slv_idx(b, gamma,  bP, gammaP,  X_ixyz,it) ] *
+                 		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
+            } 
+            
+			FFT3D (WF_left  , FFTW_BACKWARD );
+			FFT3D (WF_right , FFTW_FORWARD  );
+ 
+            for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
+			  WF_mom_space[X_ixyz] += - WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
+
+
+            //-1/2 T5
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+              
+			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
+				          Prop_ud[ prop_slv_idx(d, beta ,  bP, gammaP,  X_ixyz,it) ] ;
+
+			  ((COMPLEX*)WF_right)[X_ixyz] =  Prop_ud[ prop_slv_idx(a, ALPHA,  dP, alphaP,  X_ixyz,it) ] *
+                          Prop_ud[ prop_slv_idx(b, gamma,  aP, ALPHA ,  X_ixyz,it) ] *
+                 		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
+            } 
+            
+			FFT3D (WF_left  , FFTW_BACKWARD );
+			FFT3D (WF_right , FFTW_FORWARD  );
+ 
+            for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
+			  WF_mom_space[X_ixyz] += 0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
+
+
+            //-1/2 T6
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+              
+			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
+				          Prop_ud[ prop_slv_idx(d, beta ,  aP, ALPHA ,  X_ixyz,it) ] ;
+
+			  ((COMPLEX*)WF_right)[X_ixyz] =  Prop_ud[ prop_slv_idx(a, ALPHA,  bP, gammaP,  X_ixyz,it) ] *
+                          Prop_ud[ prop_slv_idx(b, gamma,  dP, alphaP,  X_ixyz,it) ] *
+                 		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
+            } 
+            
+			FFT3D (WF_left  , FFTW_BACKWARD );
+			FFT3D (WF_right , FFTW_FORWARD  );
+ 
+            for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
+			  WF_mom_space[X_ixyz] += 0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
                             
-                          )
-                          ;
-            }//X_ixyz
+
+
+            FFT3D(WF_mom_space, FFTW_BACKWARD);
+
+			COMPLEX factor = back_prop_contraction[prop_slv_cs_idx(d, alpha, dP, betaP)] *
+                             ZGM(alpha,5) * Eps(3,color) * zcg5[gamma] * 
+						     ZGM(alphaP,5) * Eps(3,colorP) * zcg5[gammaP];
+			
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+			  ((COMPLEX*)wave_function)[X_ixyz] += factor * WF_mom_space[X_ixyz];
+            } 
+            
+
            
 
-            sum_sink += back_prop_contraction[prop_slv_cs_idx(d, alpha, dP, betaP)] *
-                        sum_X_ixyz * 
-                        ZGM(alpha,5) * Eps(3,color) * zcg5[gamma];
           }}}}//sink
 
-
-          sum_source += sum_sink *
-                        ZGM(alphaP,5) * Eps(3,colorP) * zcg5[gammaP];
+                        
                         
         }}}}//source
       
-        sum_freeDI += 0.5 * sum_source;
       }//ALPHA
     
-      sum_N += sum_freeDI/N_noises;
     }//i_noise
 
- 
-  ((COMPLEX*)correlator_local)[it + TnodeSites * TnodeCoor] = sum_N;
+
+	COMPLEX norm_factor = 0.5 / (N_noises* XYZnodeSites);
+	
+    for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+	  ((COMPLEX*)wave_function)[X_ixyz] += norm_factor * wave_function[X_ixyz];
+    } 
     
   } // it, end of omp parallel
 
   // reduce from all MPI processes
   MPI_Barrier(MPI_COMM_WORLD);
-  MPI_Reduce(correlator_local, correlator_global, 2*Tsites, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  
-  // output correlator
-  for(int it = 0; it < Tsites; it++){
-    ((COMPLEX*)correlator)[it]=((COMPLEX*)correlator_global)[it];
-  }
   
 #undef back_prop  
 }
@@ -255,7 +350,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* correlator){
 // calculate pi-sigma NBS wave function --- the loop part 
 //       formulas in notes 
 //
-void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator){
+void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator, int time){
 
   // complexify propagators 
   COMPLEX* Prop_ud            = (COMPLEX*)prop_ud        ;//+ prop_slv_idx(0,0,0,0,ixyz,it); 
@@ -439,7 +534,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator){
 // ================================================================================================
 // print the NBS wave function
 //
-void class_two_hadrons::NBSwf_print(double *wave_function, string hadron_names)
+void class_two_hadrons::NBSwf_print(double *wave_function, string hadron_names, int time)
 {
   
   for(int it=0; it<TnodeSites;it++){

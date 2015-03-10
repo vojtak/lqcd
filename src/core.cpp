@@ -560,7 +560,7 @@ int core(int argc,char** argv)
 
       // loop over nT
 //      for(int iT_noise_src_pos=0;iT_noise_src_pos<CommonParameters::Lt();iT_noise_src_pos++){
-      for(int iT_noise_src_pos=7;iT_noise_src_pos<8;iT_noise_src_pos+=15){
+      for(int iT_noise_src_pos=6;iT_noise_src_pos<7;iT_noise_src_pos+=15){
 
         vout.general("\n\n ++++++ NOISE num %2d, from time slice %2d\n",
                   i_noise, iT_noise_src_pos);
@@ -646,6 +646,7 @@ int core(int argc,char** argv)
       Hadron_wall.run_all_GF();
 
       Two_hadrons.run_all_GF();
+      Two_hadrons.run_all_NBSwf();
 
  
       ///////////////////////////////////////////////////////////

@@ -46,8 +46,8 @@ class class_two_hadrons : public class_global_wrapper {
 
   void run_NBSwf(string hadron_names);
 
-  void run_NBSwf_pi_sigma_tree(double* NBS_wave);
-  void run_NBSwf_pi_sigma_loop(double* NBS_wave);
+  void run_NBSwf_pi_sigma_tree(double* NBS_wave, int time);
+  void run_NBSwf_pi_sigma_loop(double* NBS_wave, int time);
 
   private:
 
@@ -67,7 +67,7 @@ class class_two_hadrons : public class_global_wrapper {
   //
 
   void corr_print(double *correlator, string hadron_names);  
-  void NBSwf_print(double *correlator, string hadron_names);  
+  void NBSwf_print(double *correlator, string hadron_names, int time);  
 
 
   // =======================================

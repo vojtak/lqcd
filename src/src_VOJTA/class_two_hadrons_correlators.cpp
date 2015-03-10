@@ -103,7 +103,7 @@ void class_two_hadrons::run_GF(string hadron_names){
     
     double correlator_tree_NONOISE[2*Tsites];
     memset(correlator_tree_NONOISE,0,sizeof(correlator_tree_NONOISE)); 
-    NBSwf_print(correlator_tree_NONOISE, "pi-sigma_tree_NONOISE");
+    //NBSwf_print(correlator_tree_NONOISE, "pi-sigma_tree_NONOISE");
  
     run_GF_pi_sigma_tree_NONOISE(correlator_tree_NONOISE);
     corr_print(correlator_tree_NONOISE, hadron_names+"_tree_NONOISE");
