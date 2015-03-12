@@ -28,7 +28,7 @@ using namespace HAL_idx;
 
 void class_two_hadrons::run_all_NBSwf(){
 
-  run_NBSwf(“pion-sigma");
+  run_NBSwf("pion-sigma");
 
 }
 
@@ -40,7 +40,7 @@ void class_two_hadrons::run_NBSwf(string hadron_names){
 
   double wave_function[2*XYZnodeSites];
   memset(wave_function,0,sizeof(wave_function));  
-  int time =6; 
+  int time =25; 
   
   if(MPI_rank==0){
 	printf(" ++++++ run_NBSwf : calculate %s NBS wave function  at time T=%2d      %s\n",
@@ -129,7 +129,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
   int it = (time + 100*Tsites)%Tsites; 			 
   // correlator itself
 
-  if( it/TnodeSites == TnodeCoor ){
+//  if( it/TnodeSites == TnodeCoor ){
 
     // noise summation
     COMPLEX sum_N = COMPLEX_ZERO;
@@ -158,7 +158,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 
       // free Dirac index summation
       COMPLEX sum_freeDI = COMPLEX_ZERO;
-      for(int ALPHA = 0; ALPHA < 2; ALPHA++){
+      for(int ALPHA = 0; ALPHA < 1; ALPHA++){
 
 
         // source summation
@@ -191,28 +191,36 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 	        memset(WF_mom_space,0,sizeof(WF_mom_space));
 			
             double WF_left[2*XYZnodeSites];
+	        memset(WF_left,0,sizeof(WF_mom_space));
             double WF_right[2*XYZnodeSites];
+	        memset(WF_right,0,sizeof(WF_mom_space));
 			
             //-1/2 T1
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
-              
+				printf ("%7d %7d %7d\n",X_ixyz, prop_slv_idx(2, 3 ,  2, 3,  XYZnodeSites-1,11),XYZTnodeSites * 3*4*3*4 );
+				printf ("%7d %7d %7d\n", sizeof(Prop_ud)/sizeof(double),sizeof(Prop_s)/sizeof(double),sizeof(Noise)/sizeof(double));
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
 				          Prop_ud[ prop_slv_idx(d, beta ,  bP, gammaP,  X_ixyz,it) ] ;
 
 			  ((COMPLEX*)WF_right)[X_ixyz] =  Prop_ud[ prop_slv_idx(a, ALPHA,  aP, ALPHA ,  X_ixyz,it) ] *
                           Prop_ud[ prop_slv_idx(b, gamma,  dP, alphaP,  X_ixyz,it) ] *
                  		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
+            }
             } 
             
 			FFT3D (WF_left  , FFTW_BACKWARD );
 			FFT3D (WF_right , FFTW_FORWARD  );
  
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += -0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
             } 
+		    }
                            
 
             //-1/2 T2
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -222,15 +230,19 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
                           Prop_ud[ prop_slv_idx(b, gamma,  bP, gammaP,  X_ixyz,it) ] *
                  		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
             } 
+            } 
             
 			FFT3D (WF_left  , FFTW_BACKWARD );
 			FFT3D (WF_right , FFTW_FORWARD  );
  
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += -0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
             } 
+            } 
 
             //+1 T3
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -240,16 +252,20 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
                           Prop_ud[ prop_slv_idx(b, gamma,  aP, ALPHA ,  X_ixyz,it) ] *
                  		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
             } 
+            } 
             
 			FFT3D (WF_left  , FFTW_BACKWARD );
 			FFT3D (WF_right , FFTW_FORWARD  );
  
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] +=  WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
             } 
 
 
             //+1 T4
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -259,16 +275,20 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
                           Prop_ud[ prop_slv_idx(b, gamma,  bP, gammaP,  X_ixyz,it) ] *
                  		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
             } 
+            } 
             
 			FFT3D (WF_left  , FFTW_BACKWARD );
 			FFT3D (WF_right , FFTW_FORWARD  );
  
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += - WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
             } 
 
 
             //-1/2 T5
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -278,16 +298,20 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
                           Prop_ud[ prop_slv_idx(b, gamma,  aP, ALPHA ,  X_ixyz,it) ] *
                  		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
             } 
+            } 
             
 			FFT3D (WF_left  , FFTW_BACKWARD );
 			FFT3D (WF_right , FFTW_FORWARD  );
  
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += 0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
             } 
 
 
             //-1/2 T6
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -297,12 +321,15 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
                           Prop_ud[ prop_slv_idx(b, gamma,  dP, alphaP,  X_ixyz,it) ] *
                  		  Prop_s[  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
             } 
+            } 
             
 			FFT3D (WF_left  , FFTW_BACKWARD );
 			FFT3D (WF_right , FFTW_FORWARD  );
  
+			if(it/TnodeSites==TnodeCoor){
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += 0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
+            } 
             } 
                             
 
@@ -337,7 +364,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 	  ((COMPLEX*)wave_function)[X_ixyz] += norm_factor * wave_function[X_ixyz];
     } 
     
-  } // it, end of omp parallel
+//  } // it, end of omp parallel
 
   // reduce from all MPI processes
   MPI_Barrier(MPI_COMM_WORLD);
@@ -350,6 +377,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 // calculate pi-sigma NBS wave function --- the loop part 
 //       formulas in notes 
 //
+/*
 void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator, int time){
 
   // complexify propagators 
@@ -401,19 +429,16 @@ void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator, int time){
                 288, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
 				
-  // correlator itself
-  #pragma omp parallel for
-  for(int it = 0; it < TnodeSites; it++){
+  int it = (time + 100*Tsites)%Tsites; 			 
+
+  if( it/TnodeSites == TnodeCoor ){
 
 
-    // noise summation
-    COMPLEX sum_N = COMPLEX_ZERO;
-    for(int i_noise = 0; i_noise < N_noises; i_noise++){
+	  for(int i_noise = 0; i_noise < N_noises; i_noise++){
     
       COMPLEX* Noise      = (COMPLEX*)sources->get_noise_ixyz(i_noise);
       COMPLEX* Prop_noise = Prop_noise_full + i_noise * XYZTnodeSites * 3*4*3*4;
 
-      // free Dirac index summation
       COMPLEX sum_freeDI = COMPLEX_ZERO;
       for(int ALPHA = 0; ALPHA < 2; ALPHA++){
 
@@ -442,6 +467,35 @@ void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator, int time){
           for(int gamma   = 0; gamma  < 4; gamma++){
             int delta = icg5[gamma]; 
 
+
+
+            double WF_mom_space[2*XYZnodeSites];
+	        memset(WF_mom_space,0,sizeof(WF_mom_space));
+			
+            double WF_left[2*XYZnodeSites];
+            double WF_right[2*XYZnodeSites];
+			
+            //-3/2 L7
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+              
+			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
+				          Prop_ud[ prop_slv_idx(d, beta ,  bP, gammaP,  X_ixyz,it) ] ;
+
+			  ((COMPLEX*)WF_right)[X_ixyz] =  Prop_ud[ prop_slv_idx(a, ALPHA,  dP, alphaP,  X_ixyz,it) ] *
+                          Prop_noise[  prop_slv_idx(b, gamma,  d , alpha ,  X_ixyz,it) ] *
+                 		  Prop_s    [  prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ] ;
+            } 
+            
+			FFT3D (WF_left  , FFTW_BACKWARD );
+			FFT3D (WF_right , FFTW_FORWARD  );
+ 
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+			  ((COMPLEX*)WF_mom_space)[X_ixyz] += -1.5 *  src_ctr_global[ prop_slv_cs_idx(dP, betaP, aP, ALPHA) ] *
+				                      ((COMPLEX*)WF_left)[X_ixyz] * ((COMPLEX*)WF_right)[X_ixyz];
+            } 
+                           
+
+			//////////////////////////////////////////////////
 
             //sum X_ixyz
             COMPLEX sum_X_ixyz = COMPLEX_ZERO;
@@ -496,8 +550,19 @@ void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator, int time){
             }//X_ixyz
             
 
-            sum_sink += sum_X_ixyz * 
-                        ZGM(alpha,5) * Eps(3,color) * zcg5[gamma];
+			////////////////////////////////////////////////////////////////////////////////
+
+            FFT3D(WF_mom_space, FFTW_BACKWARD);
+
+			COMPLEX factor = back_prop_contraction[prop_slv_cs_idx(d, alpha, dP, betaP)] *
+                             ZGM(alpha,5) * Eps(3,color) * zcg5[gamma] * 
+						     ZGM(alphaP,5) * Eps(3,colorP) * zcg5[gammaP];
+			
+            for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
+			  ((COMPLEX*)wave_function)[X_ixyz] += factor * WF_mom_space[X_ixyz];
+            } 
+            
+
           }}}}//sink
 
 
@@ -528,7 +593,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator, int time){
   
 
 }
-
+*/
 
 
 // ================================================================================================
