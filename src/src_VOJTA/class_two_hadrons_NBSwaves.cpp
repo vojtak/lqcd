@@ -40,7 +40,7 @@ void class_two_hadrons::run_NBSwf(string hadron_names){
 
   double wave_function[2*XYZnodeSites];
   memset(wave_function,0,sizeof(wave_function));  
-  int time =25; 
+  int time =15; 
   
   if(MPI_rank==0){
 	printf(" ++++++ run_NBSwf : calculate %s NBS wave function  at time T=%2d      %s\n",
@@ -126,13 +126,13 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 
 			  
 			  			  
-  int it = (time + 100*Tsites)%Tsites; 			 
+  int it = ((time + 100*Tsites)%Tsites)%TnodeSites; 			 
   // correlator itself
 
 //  if( it/TnodeSites == TnodeCoor ){
 
     // noise summation
-    COMPLEX sum_N = COMPLEX_ZERO;
+
     for(int i_noise = 0; i_noise < N_noises; i_noise++){
     
       COMPLEX* Noise      = (COMPLEX*)sources->get_noise_ixyz(i_noise);
@@ -141,6 +141,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
       COMPLEX back_prop_contraction[3*4*3*4];
       memset(back_prop_contraction,0,sizeof(back_prop_contraction));
 
+   
       for(int a=0;a<3;a++){
       for(int alf=0;alf<4;alf++){
       for(int aP=0; aP<3;aP++){
@@ -157,25 +158,30 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
       }}}}
 
       // free Dirac index summation
-      COMPLEX sum_freeDI = COMPLEX_ZERO;
-      for(int ALPHA = 0; ALPHA < 1; ALPHA++){
+
+      for(int ALPHA = 0; ALPHA < 2; ALPHA++){
 
 
         // source summation
-        COMPLEX sum_source = COMPLEX_ZERO;
-        for(int dP      = 0; dP     < 3; dP++){
-        for(int alphaP  = 0; alphaP < 4; alphaP++){
+        for(int source_multiindex=0;source_multiindex<288;source_multiindex++){
+            int dP = source_multiindex / 96 ;
+			int alphaP =(source_multiindex / 24) % 4 ; 
+			int colorP =(source_multiindex / 4) % 6 ;
+			int gammaP =source_multiindex % 4 ; 
+					
+        //for(int dP      = 0; dP     < 3; dP++){
+        //for(int alphaP  = 0; alphaP < 4; alphaP++){
           int betaP=IGM(alphaP,5);
-        for(int colorP  = 0; colorP < 6; colorP++){
+        //for(int colorP  = 0; colorP < 6; colorP++){
           int aP    =Eps(0,colorP);
           int bP    =Eps(1,colorP);
           int cP    =Eps(2,colorP);          
-        for(int gammaP  = 0; gammaP < 4; gammaP++){
+        //for(int gammaP  = 0; gammaP < 4; gammaP++){
           int deltaP = icg5[gammaP]; 
                     
           
           // sink summation
-          COMPLEX sum_sink = COMPLEX_ZERO;
+
           for(int d       = 0; d      < 3; d ++){
           for(int alpha   = 0; alpha  < 4; alpha++){
             int beta=IGM(alpha,5);
@@ -197,9 +203,9 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 			
             //-1/2 T1
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
-				printf ("%7d %7d %7d\n",X_ixyz, prop_slv_idx(2, 3 ,  2, 3,  XYZnodeSites-1,11),XYZTnodeSites * 3*4*3*4 );
-				printf ("%7d %7d %7d\n", sizeof(Prop_ud)/sizeof(double),sizeof(Prop_s)/sizeof(double),sizeof(Noise)/sizeof(double));
+
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
 				          Prop_ud[ prop_slv_idx(d, beta ,  bP, gammaP,  X_ixyz,it) ] ;
 
@@ -213,6 +219,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 			FFT3D (WF_right , FFTW_FORWARD  );
  
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += -0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
             } 
@@ -221,6 +228,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 
             //-1/2 T2
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -236,6 +244,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 			FFT3D (WF_right , FFTW_FORWARD  );
  
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += -0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
             } 
@@ -243,6 +252,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 
             //+1 T3
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -258,6 +268,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 			FFT3D (WF_right , FFTW_FORWARD  );
  
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] +=  WF_left[X_ixyz] * WF_right[X_ixyz];
             } 
@@ -266,6 +277,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 
             //+1 T4
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -281,6 +293,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 			FFT3D (WF_right , FFTW_FORWARD  );
  
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += - WF_left[X_ixyz] * WF_right[X_ixyz];
             } 
@@ -289,6 +302,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 
             //-1/2 T5
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -304,6 +318,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 			FFT3D (WF_right , FFTW_FORWARD  );
  
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += 0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
             } 
@@ -312,6 +327,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 
             //-1/2 T6
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
               
 			  ((COMPLEX*)WF_left)[X_ixyz]  =  Conj(Noise[X_ixyz]) * 
@@ -327,6 +343,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 			FFT3D (WF_right , FFTW_FORWARD  );
  
 			if(it/TnodeSites==TnodeCoor){
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < 2*XYZnodeSites; X_ixyz++){
 			  WF_mom_space[X_ixyz] += 0.5 * WF_left[X_ixyz] * WF_right[X_ixyz];
             } 
@@ -340,6 +357,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
                              ZGM(alpha,5) * Eps(3,color) * zcg5[gamma] * 
 						     ZGM(alphaP,5) * Eps(3,colorP) * zcg5[gammaP];
 			
+//#pragma omp parallel for
             for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
 			  ((COMPLEX*)wave_function)[X_ixyz] += factor * WF_mom_space[X_ixyz];
             } 
@@ -351,8 +369,8 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 
                         
                         
-        }}}}//source
-      
+        }// }}}//source
+
       }//ALPHA
     
     }//i_noise
@@ -364,7 +382,6 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time)
 	  ((COMPLEX*)wave_function)[X_ixyz] += norm_factor * wave_function[X_ixyz];
     } 
     
-//  } // it, end of omp parallel
 
   // reduce from all MPI processes
   MPI_Barrier(MPI_COMM_WORLD);
@@ -602,16 +619,15 @@ void class_two_hadrons::run_NBSwf_pi_sigma_loop(double* correlator, int time){
 void class_two_hadrons::NBSwf_print(double *wave_function, string hadron_names, int time)
 {
   
-  for(int it=0; it<TnodeSites;it++){
+  if(time/TnodeSites==TnodeCoor){
 
-	int iT_glob= it + TnodeSites * TnodeCoor;
-	
+
     // create directory and file name
     char dir[256];
     string dir_base="results/"+base+"/"+prefix+"NBSwaveF_two_hardons/"+hadron_names;
-    snprintf(dir,sizeof(dir), "%s.t%02d/",
-             dir_base.c_str(),
-             iT_glob);
+    snprintf(dir,sizeof(dir), "%s.tS%02dtWF%02d/",
+             dir_base.c_str(),iT_src,
+             time);
 
     create_directory(dir);
     //printf("%s %s\n",prefix.c_str(),dir.c_str());
@@ -621,7 +637,7 @@ void class_two_hadrons::NBSwf_print(double *wave_function, string hadron_names, 
              dir,XnodeCoor,YnodeCoor,ZnodeCoor);
 
     printf(" ++++++ NBSff_print : print %10s NBSdw at t=%i to file \n                     %s\n                     %s\n",
-           hadron_names.c_str(), iT_glob, wfile, LocalTime().c_str());
+           hadron_names.c_str(), time, wfile, LocalTime().c_str());
  
     // open output file
     string ofname(wfile);

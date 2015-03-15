@@ -643,9 +643,9 @@ int core(int argc,char** argv)
       // ========================================
       // run all green functions 
 
-      Hadron_wall.run_all_GF();
+      //Hadron_wall.run_all_GF();
 
-      Two_hadrons.run_all_GF();
+      //Two_hadrons.run_all_GF();
       Two_hadrons.run_all_NBSwf();
 
  
