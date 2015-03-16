@@ -52,6 +52,41 @@ void class_two_hadrons::run_GF(string hadron_names){
     
   if(hadron_names=="pion-sigma"){
 
+    //tree part
+    if(MPI_rank==0){
+      printf("        ++++++ run_GF : the TREE part        begin %s\n",
+             LocalTime().c_str());
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    
+    double correlator_tree[2*Tsites];
+    memset(correlator_tree,0,sizeof(correlator_tree));  
+    run_GF_pi_sigma_tree(correlator_tree);
+    corr_print(correlator_tree     , hadron_names+"_tree"     );
+    if(MPI_rank==0){
+      printf("        ++++++ run_GF :                        end %s\n", 
+             LocalTime().c_str());
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    //loop part
+    if(MPI_rank==0){
+      printf("        ++++++ run_GF : the LOOP part        begin %s\n",
+             LocalTime().c_str());
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    double correlator_loop[2*Tsites];
+    memset(correlator_loop,0,sizeof(correlator_loop));  
+    run_GF_pi_sigma_loop(correlator_loop);
+    corr_print(correlator_loop     , hadron_names+"_loop"     );
+    if(MPI_rank==0){
+      printf("        ++++++ run_GF :                        end %s\n", 
+             LocalTime().c_str());
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+
+
 /*
     int indexes[8] = {7,8,9,10,13,14,15,16};
     
@@ -78,22 +113,7 @@ void class_two_hadrons::run_GF(string hadron_names){
     MPI_Barrier(MPI_COMM_WORLD);
     }}
     
-    if(MPI_rank==0){
-      printf("       ++++++ run_GF : the TREE part        begin %s\n",
-             LocalTime().c_str());
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-    
-    double correlator_tree[2*Tsites];
-    memset(correlator_tree,0,sizeof(correlator_tree));  
-    run_GF_pi_sigma_tree(correlator_tree);
-    corr_print(correlator_tree     , hadron_names+"_tree"     );
-    if(MPI_rank==0){
-      printf("       ++++++ run_GF :                        end %s\n", 
-             LocalTime().c_str());
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-*/
+
 
     if(MPI_rank==0){
       printf("       ++++++ run_GF : the TREE part NN     begin %s\n",
@@ -113,22 +133,6 @@ void class_two_hadrons::run_GF(string hadron_names){
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-/*
-    if(MPI_rank==0){
-      printf("       ++++++ run_GF : the LOOP part        begin %s\n",
-             LocalTime().c_str());
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    double correlator_loop[2*Tsites];
-    memset(correlator_loop,0,sizeof(correlator_loop));  
-    run_GF_pi_sigma_loop(correlator_loop);
-    GF_print(correlator_loop     , hadron_names+"_loop"     );
-    if(MPI_rank==0){
-      printf("       ++++++ run_GF :                        end %s\n", 
-             LocalTime().c_str());
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
 
     
 
@@ -149,10 +153,10 @@ void class_two_hadrons::run_GF(string hadron_names){
     MPI_Barrier(MPI_COMM_WORLD);
 */
 
-    //for(int i=0;i<2*Tsites;i++){
-    //  correlator[i]=correlator_tree[i]+correlator_loop[i];    
-    //}
-    //corr_print(correlator          , hadron_names             );
+    for(int i=0;i<2*Tsites;i++){
+      correlator[i]=correlator_tree[i]+correlator_loop[i];    
+    }
+    corr_print(correlator          , hadron_names             );
 
   }
   else{
@@ -255,27 +259,27 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
               sum_X_ixyz+=Conj(Noise[X_ixyz]) * 
                           Prop_s[ prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it) ]*
                           ( -0.5*                                                               //-1/2 T1
-                            Prop_ud[ prop_slv_idx(b, gamma,  dP, alphaP,  X_ixyz,it) ]*
+                            Prop_ud[ prop_slv_idx(b, gamma,  dP, betaP ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(a, ALPHA,  aP, ALPHA ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(d, beta ,  bP, gammaP,  X_ixyz,it) ]
                             -0.5*                                                               //-1/2 T2
-                            Prop_ud[ prop_slv_idx(a, ALPHA,  dP, alphaP,  X_ixyz,it) ]*
+                            Prop_ud[ prop_slv_idx(a, ALPHA,  dP, betaP ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(d, beta ,  aP, ALPHA ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(b, gamma,  bP, gammaP,  X_ixyz,it) ]
                             +                                                              //+1 T3
-                            Prop_ud[ prop_slv_idx(d, beta ,  dP, alphaP,  X_ixyz,it) ]*
+                            Prop_ud[ prop_slv_idx(d, beta ,  dP, betaP ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(b, gamma,  aP, ALPHA ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(a, ALPHA,  bP, gammaP,  X_ixyz,it) ]
                             -                                                              //+1 T4
-                            Prop_ud[ prop_slv_idx(d, beta ,  dP, alphaP,  X_ixyz,it) ]*
+                            Prop_ud[ prop_slv_idx(d, beta ,  dP, betaP ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(a, ALPHA,  aP, ALPHA ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(b, gamma,  bP, gammaP,  X_ixyz,it) ]
                             +0.5*                                                              //-1/2 T5
-                            Prop_ud[ prop_slv_idx(a, ALPHA,  dP, alphaP,  X_ixyz,it) ]*
+                            Prop_ud[ prop_slv_idx(a, ALPHA,  dP, betaP ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(b, gamma,  aP, ALPHA ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(d, beta ,  bP, gammaP,  X_ixyz,it) ]
                             +0.5*                                                              //-1/2 T6
-                            Prop_ud[ prop_slv_idx(b, gamma,  dP, alphaP,  X_ixyz,it) ]*
+                            Prop_ud[ prop_slv_idx(b, gamma,  dP, betaP ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(d, beta ,  aP, ALPHA ,  X_ixyz,it) ]*
                             Prop_ud[ prop_slv_idx(a, ALPHA,  bP, gammaP,  X_ixyz,it) ]
                             
@@ -284,7 +288,7 @@ void class_two_hadrons::run_GF_pi_sigma_tree(double* correlator){
             }//X_ixyz
            
 
-            sum_sink += back_prop_contraction[prop_slv_cs_idx(d, alpha, dP, betaP)] *
+            sum_sink += back_prop_contraction[prop_slv_cs_idx(d, alpha, dP, alphaP)] *
                         sum_X_ixyz * 
                         ZGM(alpha,5) * Eps(3,color) * zcg5[gamma];
           }}}}//sink
@@ -374,7 +378,7 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
   MPI_Allreduce(src_ctr_local, src_ctr_global, 
                 288, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-				
+
   // correlator itself
   #pragma omp parallel for
   for(int it = 0; it < TnodeSites; it++){
@@ -425,44 +429,44 @@ void class_two_hadrons::run_GF_pi_sigma_loop(double* correlator){
               sum_X_ixyz+=1.5* Conj(Noise[X_ixyz]) * 
                           Prop_s[ prop_slv_idx(c, delta,  cP, deltaP,  X_ixyz,it)  ]*
                           (                                                               
-                            src_ctr_global[ prop_slv_cs_idx(dP, betaP, aP, ALPHA) ]*
+                            src_ctr_global[ prop_slv_cs_idx(dP, alphaP, aP, ALPHA) ]*
                             ( -
                               Prop_noise    [ prop_slv_idx   (b, gamma, d, alpha,  X_ixyz,it) ]*
                               (
-                                Prop_ud       [ prop_slv_idx   (a, ALPHA, dP, alphaP,  X_ixyz,it) ]*  //-3/2 L7
+                                Prop_ud       [ prop_slv_idx   (a, ALPHA, dP, betaP ,  X_ixyz,it) ]*  //-3/2 L7
                                 Prop_ud       [ prop_slv_idx   (d, beta , bP, gammaP,  X_ixyz,it) ]
                                 +
-                                Prop_ud       [ prop_slv_idx   (d, beta , dP, alphaP,  X_ixyz,it) ]*  //+3/2 L8
+                                Prop_ud       [ prop_slv_idx   (d, beta , dP, betaP ,  X_ixyz,it) ]*  //+3/2 L8
                                 Prop_ud       [ prop_slv_idx   (a, ALPHA, bP, gammaP,  X_ixyz,it) ]                                
                               )
                               +
                               Prop_noise    [ prop_slv_idx   (a, ALPHA, d, alpha,  X_ixyz,it) ]*
                               (
-                                Prop_ud       [ prop_slv_idx   (b, gamma, dP, alphaP,  X_ixyz,it) ]*  //-3/2 L9
+                                Prop_ud       [ prop_slv_idx   (b, gamma, dP, betaP ,  X_ixyz,it) ]*  //-3/2 L9
                                 Prop_ud       [ prop_slv_idx   (d, beta , bP, gammaP,  X_ixyz,it) ]
                                 +
-                                Prop_ud       [ prop_slv_idx   (d, beta , dP, alphaP,  X_ixyz,it) ]*  //+3/2 L10
+                                Prop_ud       [ prop_slv_idx   (d, beta , dP, betaP ,  X_ixyz,it) ]*  //+3/2 L10
                                 Prop_ud       [ prop_slv_idx   (b, gamma, bP, gammaP,  X_ixyz,it) ]                                
                               )
                             )
                             +
-                            src_ctr_global[ prop_slv_cs_idx(dP, betaP, bP, gammaP) ]*
+                            src_ctr_global[ prop_slv_cs_idx(dP, alphaP, bP, gammaP) ]*
                             ( +
                               Prop_noise    [ prop_slv_idx   (b, gamma, d, alpha,  X_ixyz,it) ]*
                               (
-                                Prop_ud       [ prop_slv_idx   (a, ALPHA, dP, alphaP,  X_ixyz,it) ]*  //-3/2 L13
+                                Prop_ud       [ prop_slv_idx   (a, ALPHA, dP, betaP ,  X_ixyz,it) ]*  //-3/2 L13
                                 Prop_ud       [ prop_slv_idx   (d, beta , aP, ALPHA ,  X_ixyz,it) ]
                                 +
-                                Prop_ud       [ prop_slv_idx   (d, beta , dP, alphaP,  X_ixyz,it) ]*  //+3/2 L14
+                                Prop_ud       [ prop_slv_idx   (d, beta , dP, betaP ,  X_ixyz,it) ]*  //+3/2 L14
                                 Prop_ud       [ prop_slv_idx   (a, ALPHA, aP, ALPHA ,  X_ixyz,it) ]                                
                               )
                               -
                               Prop_noise    [ prop_slv_idx   (a, ALPHA, d, alpha,  X_ixyz,it) ]*
                               (
-                                Prop_ud       [ prop_slv_idx   (b, gamma, dP, alphaP,  X_ixyz,it) ]*  //-3/2 L15
+                                Prop_ud       [ prop_slv_idx   (b, gamma, dP, betaP ,  X_ixyz,it) ]*  //-3/2 L15
                                 Prop_ud       [ prop_slv_idx   (d, beta , aP, ALPHA ,  X_ixyz,it) ]
                                 +
-                                Prop_ud       [ prop_slv_idx   (d, beta , dP, alphaP,  X_ixyz,it) ]*  //+3/2 L16
+                                Prop_ud       [ prop_slv_idx   (d, beta , dP, betaP ,  X_ixyz,it) ]*  //+3/2 L16
                                 Prop_ud       [ prop_slv_idx   (b, gamma, aP, ALPHA ,  X_ixyz,it) ]                                
                               )
                             )
@@ -525,8 +529,8 @@ void class_two_hadrons::corr_print(double *correlator, string hadron_names){
              hadron_names.c_str(),
              iT_src);
 
-    printf(" ++++++ corr_print : print %10s propagator to file \n                     %s\n                     %s\n",
-           hadron_names.c_str(), wfile, LocalTime().c_str());
+    printf("        ++++++ corr_print : print %10s propagator to file                   %s\n                     %s\n",
+           hadron_names.c_str(), LocalTime().c_str(), wfile);
  
     // open output file
     string ofname(wfile);

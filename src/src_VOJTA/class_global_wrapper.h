@@ -67,24 +67,24 @@ class class_global_wrapper{
 
 
   // name of the gauge configuration and prefix for measurements
-  string base; 	        
+  string base;       
   void set_base_name(string base_in){
     base = base_in;
   };
-  string prefix; 	        
+  string prefix;       
   void set_prefix_name(string prefix_in){
     prefix = prefix_in;
   };
   
 
   // source position in time
-  int iT_src;		
+  int iT_src; 
   void set_source_position(int iT_src_in){
     iT_src = iT_src_in;
   };
 
   // source position in time
-  int N_noises;		
+  int N_noises; 
   void set_noise_number(int N_noises_in){
     N_noises = N_noises_in;
   };

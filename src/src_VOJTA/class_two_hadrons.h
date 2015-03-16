@@ -44,10 +44,10 @@ class class_two_hadrons : public class_global_wrapper {
   
   void run_all_NBSwf();
 
-  void run_NBSwf(string hadron_names);
+  void run_NBSwf(string hadron_names, int time_in);
 
-  void run_NBSwf_pi_sigma_tree(double* NBS_wave, int time);
-  void run_NBSwf_pi_sigma_loop(double* NBS_wave, int time);
+  void run_NBSwf_pi_sigma_tree(double* NBS_wave, int time_WF);
+  void run_NBSwf_pi_sigma_loop(double* NBS_wave, int time_WF);
 
   private:
 
@@ -55,19 +55,19 @@ class class_two_hadrons : public class_global_wrapper {
   // data members
   //
   
-  double *prop_ud; 	// ud propagator
-  double *prop_s;  	//  s propagator
+  double *prop_ud;      // ud propagator
+  double *prop_s;       //  s propagator
 
-  double *prop_noise; 	// ud noise propagator vector
-  class_sources *sources;		// noise source vector
+  double *prop_noise;         // ud noise propagator vector
+  class_sources *sources;     // noise source vector
 
 
   // =======================================
   // key functions
   //
 
-  void corr_print(double *correlator, string hadron_names);  
-  void NBSwf_print(double *correlator, string hadron_names, int time);  
+  void corr_print (double *correlator   , string hadron_names);  
+  void NBSwf_print(double *wave_function, string hadron_names, int time_WF);  
 
 
   // =======================================

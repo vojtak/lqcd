@@ -37,8 +37,8 @@ class class_hadron : public class_global_wrapper {
   // data members
   //
   
-  double *prop_ud; 	// ud propagator
-  double *prop_s;  	//  s propagator
+  double *prop_ud;    // ud propagator
+  double *prop_s;     //  s propagator
 
 
   // =======================================

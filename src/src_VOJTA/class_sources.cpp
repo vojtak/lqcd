@@ -214,12 +214,12 @@ void class_sources :: generate_noise_ixyz_U1(double* noise){
                      MPI_COMM_WORLD);
           }
           
-          MPI_Status *status;
+          MPI_Status status;
           if(MPI_rank==rank_to){
             MPI_Recv(noise,
                      2*XYZnodeSites,MPI_DOUBLE,
                      rank_from,1*n_t+100*n_z+10000*n_y+1000000*n_x,
-                     MPI_COMM_WORLD,status);
+                     MPI_COMM_WORLD,&status);
           }
           
 
@@ -265,12 +265,12 @@ void class_sources :: generate_noise_ixyz_Z4(double* noise){
                      MPI_COMM_WORLD);
           }
           
-          MPI_Status *status;
+          MPI_Status status;
           if(MPI_rank==rank_to){
             MPI_Recv(noise,
                      2*XYZnodeSites,MPI_DOUBLE,
                      rank_from,1*n_t+100*n_z+10000*n_y+1000000*n_x,
-                     MPI_COMM_WORLD,status);
+                     MPI_COMM_WORLD,&status);
           }
           
 

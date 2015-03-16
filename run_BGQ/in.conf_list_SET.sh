@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONF_SET_FOLDER=./configurations2
+CONF_SET_FOLDER=./configurations3
 DO_ARG_FOLDER=$CONF_SET_FOLDER
 
 rm in.conf_list
