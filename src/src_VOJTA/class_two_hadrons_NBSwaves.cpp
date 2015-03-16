@@ -339,7 +339,7 @@ void class_two_hadrons::run_NBSwf_pi_sigma_tree(double* wave_function, int time_
                            ZGM(alphaP,5) * Eps(3,colorP) * zcg5[gammaP];
  
           for(int X_ixyz = 0;  X_ixyz < XYZnodeSites; X_ixyz++){
-            ((COMPLEX*)wave_function)[X_ixyz] += factor *  ((COMPLEX*)WF_mom_space[X_ixyz]);
+            ((COMPLEX*)wave_function)[X_ixyz] += factor *  ((COMPLEX*)WF_mom_space)[X_ixyz];
           } 
             
         }}}}//sink
