@@ -264,6 +264,7 @@ void class_sources :: generate_noise_ixyz_Z4(double* noise){
                      rank_to,1*n_t+100*n_z+10000*n_y+1000000*n_x,
                      MPI_COMM_WORLD);
           }
+
           
           MPI_Status status;
           if(MPI_rank==rank_to){
